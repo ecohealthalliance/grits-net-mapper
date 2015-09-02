@@ -2,6 +2,7 @@ if Meteor.isClient
   'use strict'
   if typeof L != 'undefined'
     L.MapPath =  L.Path.extend(
+      id: null
       map: null
       smoothFactor: 1.0
       pointList: null
@@ -40,14 +41,11 @@ if Meteor.isClient
       	@visible = false
       	@map.removeLayer @pathLine
       	#L.MapPaths.removePath(this)
-      	#^removes the current MapPath from the set of MapPaths
-      initialize: (latlngs) ->
-        @pointList = latlngs
-        @visible = true
-        L.MapPaths.addPath(this)
+      	#^removes the current MapPath from the set of MapPaths      
       initialize: (flight, map) ->
         @map = map
         @visible = true
+        @id = flight['_id'].$oid
         @alliance = flight.Alliance
         @arrFlag = flight['Arr Flag']
         @arrTerm = flight['Arr Term']
@@ -73,7 +71,7 @@ if Meteor.isClient
         @seats_week= flight['Seats/Week']
         @stops = flight.Stops
         @pointList = [@origin.latlng, @destination.latlng]
-        L.MapPaths.addPath(this)
+        L.MapPaths.addInitializedPath(this)
         this.drawPath()
       calculateArch: (archPos)->
         orgDestDist = Meteor.leafnav.getDistance(@origin.latlng, @destination.latlng, "K")
@@ -136,7 +134,7 @@ if Meteor.isClient
               archPos[mapPath.archPosition]=true
             #if (mapPath.origin.equals @destination) and (mapPath.destination.equals @origin)
             #  archPos[mapPath.archPosition]=true
-        mapPath.calculateArch(archPos)          
+        this.calculateArch(archPos)          
         popup = L.popup()
         div = L.DomUtil.create("div","lbqs")              
         Blaze.renderWithData(Template.pathDetails, this, div);
@@ -167,14 +165,39 @@ if Meteor.isClient
       mapPaths : []
       mapPathCount : () ->
         @mapPaths.length
-      addPath: (mapPath) ->
+      addInitializedPath: (mapPath) ->
         @mapPaths.push(mapPath)
-      removePath: (mapPath) ->
-        @mapPaths.splice(@mapPaths.indexOf(mapPath), 1)
+      addPath: (mapPath) ->
+        exists = false
+        for tempMapPath in @mapPaths
+          if tempMapPath.id is mapPath["_id"].$oid
+            exists = true
+        if !exists
+          new L.MapPath(mapPath, @map)
+      removePath: (id) ->
+        for tempMapPath in @mapPaths
+          if tempMapPath.id is id
+            tempMapPath.hide()            
+            @mapPaths.splice(@mapPaths.indexOf(tempMapPath), 1)      
+            return  
+      updatePath: (mapPath) ->
+        for tempMapPath in @mapPaths
+          if tempMapPath.id is tempMapPath["_id"].$oid
+            tempMapPath.hide()
+            tempMapPath.initialize(mapPath, @map)
+            tempMapPath.show()
       showPath: (mapPath) ->
         mapPath.show()
       hidePath: (mapPath) ->
         mapPath.hide()
+      hideAllPaths:() ->
+        path.hide() for path in @mapPaths
+      showAllPaths:() ->
+        path.show() for path in @mapPaths
+      hideAllNodes:() ->
+        node.hide() for node in L.MapNodes.hideAllNodes()
+      showAllNodes:() ->
+        L.MapNodes.showAllNodes()
       hideBetween: (mapNodeA, mapNodeB) ->
         for mapPath in @mapPaths
           if mapPath.origin is mapNodeA and mapPath.destination is mapNodeB
@@ -197,10 +220,16 @@ if Meteor.isClient
       key: null      
       map: null
       marker: null
-      setPopup: (text) ->
-        @marker.bindPopup("<b>#{text}</b>");
+      setPopup: () ->
+        popup = new L.popup()
+        div = L.DomUtil.create("div","")       
+        Blaze.renderWithData(Template.nodeDetails, this, div);
+        popup.setContent(div)
+        @marker.bindPopup(popup);        
       initialize: (node, map) ->
         @map = map
+        @visible = true
+        @id = node['_id'].$oid
         @city = node.City
         @code = node.Code
         @country = node.Country
@@ -212,30 +241,60 @@ if Meteor.isClient
         @stateName = node['State Name']
         @wac= node.WAC
         @key= node.key
-        @latlng = new L.LatLng(node.loc.coordinates[1],node.loc.coordinates[0])
+        @latlng = new L.LatLng(node.loc.coordinates[1],node.loc.coordinates[0])        
         if !L.MapNodes.contains(this)
           @marker = L.marker(@latlng).addTo(@map);
-          L.MapNodes.addNode(this)
-          popup = L.popup()
-          div = L.DomUtil.create("div","")       
-          Blaze.renderWithData(Template.nodeDetails, this, div);
-          popup.setContent(div)
-          @marker.bindPopup(popup);   
+          L.MapNodes.addInitializedNode(this)
+          this.setPopup()             
       equals: (otherNode) ->
         return (otherNode.latlng.lat is this.latlng.lat) and (otherNode.latlng.lng is this.latlng.lng)
+      hide: () ->
+      	@visible = false
+      	@map.removeLayer @marker
+      show: () ->
+      	@visible = true
+      	@marker = L.marker(@latlng).addTo(@map);
+      	this.setPopup()   	
       )
 
     L.MapNodes =
       mapNodes : []
-      addNode : (node) ->
+      addInitializedNode : (node) ->
         @mapNodes.push(node)
+      addNode: (mapNode) ->
+        exists = false
+        for tempMapNode in @mapNodes
+          if tempMapNode.key is mapNode["_id"].$oid
+            exists = true
+        if !exists
+          new L.MapNode(mapNode, @map)
+      removeNode: (id) ->
+        for tempMapNode in @mapNodes
+          if tempMapNode.id is id
+            tempMapNode.hide()            
+            @mapNodes.splice(@mapNodes.indexOf(tempMapNode), 1)
+            return  
+      updateNode: (mapNode) ->
+        for tempMapNode in @mapNodes
+          if tempMapNode.id is tempMapNode["_id"].$oid
+            tempMapNode.hide()
+            tempMapNode.initialize(mapNode, @map)
+            tempMapNode.show()
       contains : (node) ->
       	mapNodesContains = false
-      	for mapNode in @mapNodes when mapNode.code is node.code
+      	for mapNode in @mapNodes when mapNode.id is node.id # TODO: change to use mapNode.key
       	    mapNodesContains = true
       	return mapNodesContains
       mapNodeCount : () ->
         @mapNodes.length
+      hideNode: (node) ->
+        node.hide()
+      showNode: (node) ->
+        node.show()
+      hideAllNodes : () ->
+        node.hide() for node in @mapNodes
+      showAllNodes : () ->
+        node.show() for node in @mapNodes
 
     L.mapNode = (node, map) ->
       new (L.MapNode)(node, map)
