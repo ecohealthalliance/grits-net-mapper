@@ -35,6 +35,10 @@ if Meteor.isClient
       origin_terminal: null
       destination_terminal: null
       archPosition: 0 #defines the arch position for drawing the path on a curve to avoid path overlap
+      onAdd: (map) ->
+        @pathLine.addTo(map)
+        if @IDLpathLine isnt null
+        	@IDLpathLine.addTo(map)
       show: () ->
       	@drawPath()
       hide: () ->
@@ -151,10 +155,8 @@ if Meteor.isClient
             color: @color
             weight: @weight
             opacity: 0.8
-            smoothFactor: 1)
-          @IDLpathLine.addTo @map
+            smoothFactor: 1)          
           @IDLpathLine.bindPopup(popup);
-        @pathLine.addTo @map        
         @pathLine.bindPopup(popup);
       )
 
@@ -163,6 +165,8 @@ if Meteor.isClient
 
     L.MapPaths =
       mapPaths : []
+      getLayerGroup: () ->        
+        return L.layerGroup(@mapPaths)           
       mapPathCount : () ->
         @mapPaths.length
       addInitializedPath: (mapPath) ->
@@ -220,6 +224,8 @@ if Meteor.isClient
       key: null      
       map: null
       marker: null
+      onAdd: (map) ->
+        @marker.addTo(map)
       setPopup: () ->
         popup = new L.popup()
         div = L.DomUtil.create("div","")       
@@ -243,7 +249,7 @@ if Meteor.isClient
         @key= node.key
         @latlng = new L.LatLng(node.loc.coordinates[1],node.loc.coordinates[0])        
         if !L.MapNodes.contains(this)
-          @marker = L.marker(@latlng).addTo(@map);
+          @marker = L.marker(@latlng)
           L.MapNodes.addInitializedNode(this)
           this.setPopup()             
       equals: (otherNode) ->
@@ -253,12 +259,14 @@ if Meteor.isClient
       	@map.removeLayer @marker
       show: () ->
       	@visible = true
-      	@marker = L.marker(@latlng).addTo(@map);
+      	@marker = L.marker(@latlng)
       	this.setPopup()   	
       )
 
     L.MapNodes =
       mapNodes : []
+      getLayerGroup: () ->
+        return L.layerGroup(@mapNodes)         
       addInitializedNode : (node) ->
         @mapNodes.push(node)
       addNode: (mapNode) ->
@@ -271,9 +279,9 @@ if Meteor.isClient
       removeNode: (id) ->
         for tempMapNode in @mapNodes
           if tempMapNode.id is id
-            tempMapNode.hide()            
+            tempMapNode.hide()          
             @mapNodes.splice(@mapNodes.indexOf(tempMapNode), 1)
-            return  
+            return
       updateNode: (mapNode) ->
         for tempMapNode in @mapNodes
           if tempMapNode.id is tempMapNode["_id"].$oid
