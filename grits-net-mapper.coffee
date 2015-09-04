@@ -40,16 +40,15 @@ if Meteor.isClient
         if @IDLpathLine isnt null
         	@IDLpathLine.addTo(map)
       show: () ->
-      	@drawPath()
+        @pathLine.addTo(@map) if @pathLine isnt null
+        @IDLpathLine.addTo(@map) if @IDLpathLine isnt null         	
       hide: () ->
       	@visible = false
-      	@map.removeLayer @pathLine
+      	@map.removeLayer @pathLine if @pathLine isnt null
+      	@map.removeLayer @IDLpathLine if @IDLpathLine isnt null
       	#L.MapPaths.removePath(this)
-      	#^removes the current MapPath from the set of MapPaths      
-      initialize: (flight, map) ->
-        @map = map
-        @visible = true
-        @id = flight['_id'].$oid
+      	#^removes the current MapPath from the set of MapPaths  
+      update: (flight) ->
         @alliance = flight.Alliance
         @arrFlag = flight['Arr Flag']
         @arrTerm = flight['Arr Term']
@@ -57,8 +56,39 @@ if Meteor.isClient
         @blockMins = flight['Block Mins']
         @arrTime = flight['Arr Time']
         @arrTime = flight['Arr Time']
-        @origin = new L.MapNode(flight.Orig, @map)
-        @destination = new L.MapNode(flight.Dest, @map)
+        @origin = new L.MapNode(flight.Orig, @map) if flight.Orig?
+        @destination = new L.MapNode(flight.Dest, @map) if flight.Dest?
+        @blockMins= flight['Block Mins']
+        @date= flight.Date
+        @depTerm= flight['Dep Term']
+        @depTime= flight['Dep Time']
+        @equip= flight.Equip
+        @flight= flight.Flight
+        @miles= flight.Miles
+        @mktgAl= flight['Mktg Al']
+        @opsAl= flight['Op Al']
+        @ops_day= flight['Ops Day']
+        @ops_week = flight['Ops/Week']
+        @origWAC = flight['Orig WAC']
+        @seats = flight.Seats
+        @seats_week= flight['Seats/Week']
+        @stops = flight.Stops
+        @pointList = [@origin.latlng, @destination.latlng]
+        this.setPopup()
+        return
+      initialize: (flight, map) ->
+        @map = map
+        @visible = true
+        @id = flight['_id']
+        @alliance = flight.Alliance
+        @arrFlag = flight['Arr Flag']
+        @arrTerm = flight['Arr Term']
+        @arrTime = flight['Arr Time']
+        @blockMins = flight['Block Mins']
+        @arrTime = flight['Arr Time']
+        @arrTime = flight['Arr Time']
+        @origin = new L.MapNode(flight.Orig, @map) if flight.Orig?
+        @destination = new L.MapNode(flight.Dest, @map) if flight.Dest?
         @blockMins= flight['Block Mins']
         @date= flight.Date
         @depTerm= flight['Dep Term']
@@ -124,6 +154,13 @@ if Meteor.isClient
           arcCoords.push(@destination.latlng)
         @pointList = arcCoords
         @IDLpointList = IDLarcCoords
+      setPopup: () ->
+        popup = new L.popup()
+        div = L.DomUtil.create("div","")       
+        Blaze.renderWithData(Template.pathDetails, this, div);
+        popup.setContent(div)
+        @pathLine.bindPopup(popup);
+        @IDLpathLine.bindPopup(popup) if @IDLpathLine isnt null
       setStyle: () ->
         @color = '#'+Math.floor(Math.random()*16777215).toString(16)
         @weight = Math.floor(Math.random() * 5) + 5  
@@ -138,11 +175,7 @@ if Meteor.isClient
               archPos[mapPath.archPosition]=true
             #if (mapPath.origin.equals @destination) and (mapPath.destination.equals @origin)
             #  archPos[mapPath.archPosition]=true
-        this.calculateArch(archPos)          
-        popup = L.popup()
-        div = L.DomUtil.create("div","lbqs")              
-        Blaze.renderWithData(Template.pathDetails, this, div);
-        popup.setContent(div)        
+        this.calculateArch(archPos)              
         @pathLine = new (L.Polyline)(
           @pointList
           color: @color
@@ -155,9 +188,8 @@ if Meteor.isClient
             color: @color
             weight: @weight
             opacity: 0.8
-            smoothFactor: 1)          
-          @IDLpathLine.bindPopup(popup);
-        @pathLine.bindPopup(popup);
+            smoothFactor: 1)            
+        this.setPopup() 
       )
 
     L.mapPath = (flight, map) ->
@@ -171,25 +203,26 @@ if Meteor.isClient
         @mapPaths.length
       addInitializedPath: (mapPath) ->
         @mapPaths.push(mapPath)
-      addPath: (mapPath) ->
+      addPath: (id, mapPath, map) ->
+        mapPath._id = id            
         exists = false
         for tempMapPath in @mapPaths
-          if tempMapPath.id is mapPath["_id"].$oid
+          if tempMapPath.id is mapPath["_id"]
             exists = true
         if !exists
-          new L.MapPath(mapPath, @map)
+          new L.MapPath(mapPath, map).addTo(map)
       removePath: (id) ->
         for tempMapPath in @mapPaths
           if tempMapPath.id is id
             tempMapPath.hide()            
             @mapPaths.splice(@mapPaths.indexOf(tempMapPath), 1)      
             return  
-      updatePath: (mapPath) ->
+      updatePath: (id, mapPath, map) ->
         for tempMapPath in @mapPaths
-          if tempMapPath.id is tempMapPath["_id"].$oid
+          if tempMapPath.id is id
             tempMapPath.hide()
-            tempMapPath.initialize(mapPath, @map)
-            tempMapPath.show()
+            tempMapPath.update(mapPath)
+            tempMapPath.show()           
       showPath: (mapPath) ->
         mapPath.show()
       hidePath: (mapPath) ->
@@ -235,7 +268,7 @@ if Meteor.isClient
       initialize: (node, map) ->
         @map = map
         @visible = true
-        @id = node['_id'].$oid
+        @id = node['_id']
         @city = node.City
         @code = node.Code
         @country = node.Country
@@ -272,7 +305,7 @@ if Meteor.isClient
       addNode: (mapNode) ->
         exists = false
         for tempMapNode in @mapNodes
-          if tempMapNode.key is mapNode["_id"].$oid
+          if tempMapNode.key is mapNode["_id"]
             exists = true
         if !exists
           new L.MapNode(mapNode, @map)
@@ -284,7 +317,7 @@ if Meteor.isClient
             return
       updateNode: (mapNode) ->
         for tempMapNode in @mapNodes
-          if tempMapNode.id is tempMapNode["_id"].$oid
+          if tempMapNode.id is tempMapNode["_id"]
             tempMapNode.hide()
             tempMapNode.initialize(mapNode, @map)
             tempMapNode.show()
