@@ -36,44 +36,42 @@ if Meteor.isClient
       destination_terminal: null
       archPosition: 0 #defines the arch position for drawing the path on a curve to avoid path overlap
       onAdd: (map) ->
-        @pathLine.addTo(map)
-        if @IDLpathLine isnt null
-        	@IDLpathLine.addTo(map)
+        this.show()
+        return
       show: () ->
+        @visible = true
         @pathLine.addTo(@map) if @pathLine isnt null
-        @IDLpathLine.addTo(@map) if @IDLpathLine isnt null         	
+        @IDLpathLine.addTo(@map) if @IDLpathLine isnt null
+        @origin.addTo(@map) if @origin isnt null
+        @destination.addTo(@map) if @destination isnt null
+        return
       hide: () ->
       	@visible = false
       	@map.removeLayer @pathLine if @pathLine isnt null
       	@map.removeLayer @IDLpathLine if @IDLpathLine isnt null
-      	#L.MapPaths.removePath(this)
-      	#^removes the current MapPath from the set of MapPaths  
+      	return    	
       update: (flight) ->
         @alliance = flight.Alliance
-        @arrFlag = flight['Arr Flag']
-        @arrTerm = flight['Arr Term']
-        @arrTime = flight['Arr Time']
-        @blockMins = flight['Block Mins']
-        @arrTime = flight['Arr Time']
-        @arrTime = flight['Arr Time']
-        @origin = new L.MapNode(flight.Orig, @map) if flight.Orig?
+        @arrFlag = flight['Arr Flag'] if flight['Arr Flag']?
+        @arrTerm = flight['Arr Term'] if flight['Arr Term']?
+        @arrTime = flight['Arr Time'] if flight['Arr Term']?
+        @blockMins = flight['Block Mins'] if flight['Block Mins']?
+        @origin = new L.MapNode(flight.Orig, @map) if flight.origin?
         @destination = new L.MapNode(flight.Dest, @map) if flight.Dest?
-        @blockMins= flight['Block Mins']
-        @date= flight.Date
-        @depTerm= flight['Dep Term']
-        @depTime= flight['Dep Time']
-        @equip= flight.Equip
-        @flight= flight.Flight
-        @miles= flight.Miles
-        @mktgAl= flight['Mktg Al']
-        @opsAl= flight['Op Al']
-        @ops_day= flight['Ops Day']
-        @ops_week = flight['Ops/Week']
-        @origWAC = flight['Orig WAC']
-        @seats = flight.Seats
-        @seats_week= flight['Seats/Week']
-        @stops = flight.Stops
-        @pointList = [@origin.latlng, @destination.latlng]
+        @date= flight.Date? if flight.Date
+        @depTerm= flight['Dep Term'] if flight['Dep Term']?
+        @depTime= flight['Dep Time'] if flight['Dep Time']?
+        @equip= flight.Equip if flight.Equip?
+        @flight= flight.Flight if flight.Flight?
+        @miles= flight.Miles if flight.Miles?
+        @mktgAl= flight['Mktg Al'] if flight['Mktg Al']?
+        @opsAl= flight['Op Al'] if flight['Op Al']?
+        @ops_day= flight['Ops Day'] if flight['Ops Day']?
+        @ops_week = flight['Ops/Week'] if flight['Ops/Week']?
+        @origWAC = flight['Orig WAC'] if flight['Orig WAC']
+        @seats = flight.Seats if flight.Seats?
+        @seats_week= flight['Seats/Week'] if flight['Seats/Week']?
+        @stops = flight.Stops if flight.Stops?        
         this.setPopup()
         return
       initialize: (flight, map) ->
@@ -213,10 +211,27 @@ if Meteor.isClient
           new L.MapPath(mapPath, map).addTo(map)
       removePath: (id) ->
         for tempMapPath in @mapPaths
-          if tempMapPath.id is id
-            tempMapPath.hide()            
-            @mapPaths.splice(@mapPaths.indexOf(tempMapPath), 1)      
-            return  
+          if tempMapPath.id is id            
+            tempMapPath.hide()
+            removeDest = true
+            removeOrig = true
+            o1 = tempMapPath.origin
+            d1 = tempMapPath.destination
+            for tempMapPath2 in @mapPaths
+              o2 = tempMapPath2.origin
+              d2 = tempMapPath2.destination
+              if ( o2.id is o1.id or o1.id is d2.id) and tempMapPath isnt tempMapPath2
+                removeOrig = false
+              if ( d2.id is d1.id or d1.id is o2.id) and tempMapPath isnt tempMapPath2
+                removeDest = false
+            if removeDest
+              tempMapPath.destination.hide()              
+              L.MapNodes.mapNodes.splice(L.MapNodes.mapNodes.indexOf(tempMapPath.destination), 1)
+            if removeOrig
+              tempMapPath.origin.hide()
+              L.MapNodes.mapNodes.splice(L.MapNodes.mapNodes.indexOf(tempMapPath.origin), 1)
+            @mapPaths.splice(@mapPaths.indexOf(tempMapPath), 1)            
+        return  
       updatePath: (id, mapPath, map) ->
         for tempMapPath in @mapPaths
           if tempMapPath.id is id
@@ -232,7 +247,7 @@ if Meteor.isClient
       showAllPaths:() ->
         path.show() for path in @mapPaths
       hideAllNodes:() ->
-        node.hide() for node in L.MapNodes.hideAllNodes()
+        node.hide() for node in L.MapNodes.mapNodes
       showAllNodes:() ->
         L.MapNodes.showAllNodes()
       hideBetween: (mapNodeA, mapNodeB) ->
@@ -258,7 +273,11 @@ if Meteor.isClient
       map: null
       marker: null
       onAdd: (map) ->
-        @marker.addTo(map)
+        @marker.addTo(map) if @marker isnt null
+        return
+      onRemove: (map) ->
+        map.removeLayer(@marker)
+        return
       setPopup: () ->
         popup = new L.popup()
         div = L.DomUtil.create("div","")       
@@ -284,7 +303,11 @@ if Meteor.isClient
         if !L.MapNodes.contains(this)
           @marker = L.marker(@latlng)
           L.MapNodes.addInitializedNode(this)
-          this.setPopup()             
+          this.setPopup()
+        else
+          for node in L.MapNodes.mapNodes
+            if node.id is @id
+              @marker = node.marker           
       equals: (otherNode) ->
         return (otherNode.latlng.lat is this.latlng.lat) and (otherNode.latlng.lng is this.latlng.lng)
       hide: () ->
