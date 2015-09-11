@@ -2,7 +2,7 @@
   "name": "grits-net-mapper",
   "version": "0.2.0",
   "description": "",
-  "main": "./dist/grits-net-mapper.js",
+  "main": "./lib/grits-net-mapper.js",
   "devDependencies": {
     "coffee-script": "^1.10.0",
     "coffeelint": "^1.11.1",
@@ -10,7 +10,7 @@
     "which": "^1.1.2"
   },
   "scripts": {
-    "build": "cake build",
+    "build": "coffee -c -m -o lib/ src/grits-net-mapper.coffee",
     "test": "jasmine"
   },
   "repository": {
