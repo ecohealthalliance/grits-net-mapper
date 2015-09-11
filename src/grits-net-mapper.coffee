@@ -1,5 +1,5 @@
-# if Meteor.isClient
-  'use strict'
+'use strict'
+if Meteor.isClient
   if typeof L != 'undefined'
     L.MapPath =  L.Path.extend(
       id: null
@@ -86,7 +86,7 @@
       setPopup: () ->
         popup = new L.popup()
         div = L.DomUtil.create("div","")
-        # Blaze.renderWithData(Template.pathDetails, this, div);
+        Blaze.renderWithData(Template.pathDetails, this, div);
         popup.setContent(div)
         @pathLine.bindPopup(popup);
       setStyle: () ->

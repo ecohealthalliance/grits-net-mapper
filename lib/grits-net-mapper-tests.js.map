@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "grits-net-mapper-tests.js",
+  "sourceRoot": "..",
+  "sources": [
+    "src/grits-net-mapper-tests.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAEA;EAAA,QAAQ,CAAC,GAAT,CAAa,SAAb,EAAwB,SAAC,IAAD;IACtB,IAAI,CAAC,KAAL,CAAW,IAAX,EAAiB,IAAjB;EADsB,CAAxB;AAAA"
+}

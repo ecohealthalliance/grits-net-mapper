@@ -10,7 +10,7 @@
     "which": "^1.1.2"
   },
   "scripts": {
-    "build": "coffee -c -m -o lib/ src/grits-net-mapper.coffee",
+    "build": "coffee -c -m -o lib/ src/",
     "test": "jasmine"
   },
   "repository": {
