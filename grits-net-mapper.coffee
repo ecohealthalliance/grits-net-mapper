@@ -23,8 +23,8 @@ if Meteor.isClient
       show: () ->
         @visible = true
         @pathLine.addTo(@map) if @pathLine isnt null
-        @origin.addTo(@map) if @origin isnt null
-        @destination.addTo(@map) if @destination isnt null
+        @origin.addTo(@map) if @origin isnt null and @origin.visible is false
+        @destination.addTo(@map) if @destination isnt null and @destination.visible is false
         return
       hide: () ->
       	@visible = false
@@ -89,14 +89,10 @@ if Meteor.isClient
         Blaze.renderWithData(Template.pathDetails, this, div);
         popup.setContent(div)
         @pathLine.bindPopup(popup);        
-      setStyle: () ->                
-        mid = (100 - Math.floor((@seats)/100)).toString()
-        if mid < 10
-          mid = "0"+ mid        
-        @color = '#99'+ mid + "00"
-        @weight = @seats / 250  + 2
-      drawPath: () ->
-        this.setStyle()
+      setStyle: (color, weight) ->
+        @color = color
+        @weight = weight
+      drawPath: () ->        
         @visible = true              
         #is there an existing path displayed (visible) between the path nodes?
         archPos = []
@@ -135,42 +131,54 @@ if Meteor.isClient
       addInitializedPath: (mapPath) ->
         @mapPaths.push(mapPath)
       addFactor: (id, factor, map) ->
-        if @getFactorById(id) is false
+        if @getFactorById(id) isnt false
           return
-        factor._id = id            
-        exists = false
+        factor._id = id
         path = @getMapPathByFactor(factor)
         if path isnt false
           path.seats += factor["Seats"]
           path.flights++
           path.refresh()
           @factors.push factor          
-        if path is false
-          currentPath = new L.MapPath(factor, map).addTo(map)
+        else if path is false
+          path = new L.MapPath(factor, map).addTo(map)
+          path.seats = factor["Seats"]
+          path.flights++
+          path.refresh()
           @factors.push factor
+        return path
       removeFactor: (id) ->
-        for tempMapPath in @mapPaths
-          if tempMapPath? and tempMapPath.id is id     
-            tempMapPath.hide()
-            removeDest = true
-            removeOrig = true
-            o1 = tempMapPath.origin
-            d1 = tempMapPath.destination
-            for tempMapPath in @mapPaths
-              o2 = tempMapPath.origin
-              d2 = tempMapPath.destination
-              if ( o2.id is o1.id or o1.id is d2.id) and tempMapPath isnt tempMapPath
-                removeOrig = false
-              if ( d2.id is d1.id or d1.id is o2.id) and tempMapPath isnt tempMapPath
-                removeDest = false
-            if removeDest
-              tempMapPath.destination.hide()              
-              L.MapNodes.mapNodes.splice(L.MapNodes.mapNodes.indexOf(tempMapPath.destination), 1)
-            if removeOrig
-              tempMapPath.origin.hide()
-              L.MapNodes.mapNodes.splice(L.MapNodes.mapNodes.indexOf(tempMapPath.origin), 1)
-            @mapPaths.splice(@mapPaths.indexOf(tempMapPath), 1)            
-        return  
+        factor = @getFactorById(id)
+        if factor is false
+          return false
+        @factors.splice(@factors.indexOf(factor), 1)
+        path = @getMapPathByFactor(factor)
+        path.seats -= factor["Seats"]
+        path.flights--                  
+        path.hide()        
+        if path.flights is 0
+          removeDest = true
+          removeOrig = true
+          o1 = path.origin
+          d1 = path.destination
+          for tempMapPath in @mapPaths
+            o2 = tempMapPath.origin
+            d2 = tempMapPath.destination
+            if ( o2.id is o1.id or o1.id is d2.id) and tempMapPath isnt path
+              removeOrig = false
+            if ( d2.id is d1.id or d1.id is o2.id) and tempMapPath isnt path
+              removeDest = false
+          if removeDest
+            path.destination.hide()              
+            L.MapNodes.mapNodes.splice(L.MapNodes.mapNodes.indexOf(path.destination), 1)
+          if removeOrig
+            path.origin.hide()
+            L.MapNodes.mapNodes.splice(L.MapNodes.mapNodes.indexOf(path.origin), 1)
+          @mapPaths.splice(@mapPaths.indexOf(path), 1)
+          return false
+        else
+          path.show()         
+          return {"path":path,"factor":factor}
       updatePath: (id, mapPath, map) ->
         for tempMapPath in @mapPaths
           if tempMapPath.id is id
@@ -197,6 +205,7 @@ if Meteor.isClient
             mapPath.hide()
 
     L.MapNode = L.Path.extend(
+      visible: false
       latlng: null
       city: null
       code: null
@@ -224,8 +233,7 @@ if Meteor.isClient
         popup.setContent(div)
         @marker.bindPopup(popup);        
       initialize: (node, map) ->
-        @map = map
-        @visible = true
+        @map = map        
         @id = node['_id']
         @city = node.City
         @code = node.Code

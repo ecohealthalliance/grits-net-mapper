@@ -1,5 +1,5 @@
 Package.describe({
-  name: 'treyyoder:grits-net-mapper',
+  name: 'grits:grits-net-mapper',
   version: '0.0.1',
   summary: '',
   git: '',  
@@ -15,6 +15,6 @@ Package.onUse(function(api) {
 
 Package.onTest(function(api) {
   api.use('tinytest');
-  api.use('treyyoder:grits-net-mapper');
+  api.use('grits:grits-net-mapper');
   api.addFiles('grits-net-mapper-tests.js');
 });
