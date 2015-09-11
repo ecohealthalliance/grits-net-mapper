@@ -1,22 +1,22 @@
-if Meteor.isClient
+# if Meteor.isClient
   'use strict'
   if typeof L != 'undefined'
     L.MapPath =  L.Path.extend(
       id: null
       map: null
       smoothFactor: 1.0
-      pointList: null      
-      pathLine: null      
+      pointList: null
+      pathLine: null
       origin: null
       destination: null
-      destWAC: null      
-      miles: null      
+      destWAC: null
+      miles: null
       origWAC: null
       seats: null
       seats_week: null
-      stops: null   
-      flights: 0      
-      visible: false        
+      stops: null
+      flights: 0
+      visible: false
       onAdd: (map) ->
         this.show()
         return
@@ -28,24 +28,24 @@ if Meteor.isClient
         return
       hide: () ->
       	@visible = false
-      	@map.removeLayer @pathLine if @pathLine isnt null      	
+      	@map.removeLayer @pathLine if @pathLine isnt null
       	return
-      update: (flight) ->        
+      update: (flight) ->
         @origin = new L.MapNode(flight.Orig, @map) if flight.origin?
-        @destination = new L.MapNode(flight.Dest, @map) if flight.Dest?        
-        @miles= flight.Miles if flight.Miles?        
+        @destination = new L.MapNode(flight.Dest, @map) if flight.Dest?
+        @miles= flight.Miles if flight.Miles?
         @origWAC = flight['Orig WAC'] if flight['Orig WAC']
         @seats = flight.Seats if flight.Seats?
-        @seats_week= flight['Seats/Week'] if flight['Seats/Week']?        
+        @seats_week= flight['Seats/Week'] if flight['Seats/Week']?
         this.setPopup()
         return
       initialize: (flight, map) ->
         @map = map
         @visible = true
-        @id = flight['_id']       
+        @id = flight['_id']
         @origin = new L.MapNode(flight.Orig, @map) if flight.Orig?
-        @destination = new L.MapNode(flight.Dest, @map) if flight.Dest?        
-        @miles= flight.Miles        
+        @destination = new L.MapNode(flight.Dest, @map) if flight.Dest?
+        @miles= flight.Miles
         @origWAC = flight['Orig WAC']
         @seats = flight.Seats
         @seats_week= flight['Seats/Week']
@@ -77,41 +77,41 @@ if Meteor.isClient
               [@destination.latlng.lat, @destination.latlng.lng]
               ]
         curved = turf.bezier(line, 10000, 1)
-        @pointList = curved.geometry.coordinates      
+        @pointList = curved.geometry.coordinates
       refresh: () ->
         this.setPopup()
         this.hide()
         this.drawPath()
-        this.show()      
+        this.show()
       setPopup: () ->
         popup = new L.popup()
-        div = L.DomUtil.create("div","")       
-        Blaze.renderWithData(Template.pathDetails, this, div);
+        div = L.DomUtil.create("div","")
+        # Blaze.renderWithData(Template.pathDetails, this, div);
         popup.setContent(div)
-        @pathLine.bindPopup(popup);        
-      setStyle: () ->                
+        @pathLine.bindPopup(popup);
+      setStyle: () ->
         mid = (100 - Math.floor((@seats)/100)).toString()
         if mid < 10
-          mid = "0"+ mid        
+          mid = "0"+ mid
         @color = '#99'+ mid + "00"
         @weight = @seats / 250  + 2
       drawPath: () ->
         this.setStyle()
-        @visible = true              
+        @visible = true
         #is there an existing path displayed (visible) between the path nodes?
         archPos = []
         for mapPath in L.MapPaths.mapPaths
           if mapPath isnt this
             if (mapPath.origin.equals @origin) and (mapPath.destination.equals @destination)
-              archPos[mapPath.archPosition]=true           
+              archPos[mapPath.archPosition]=true
         this.calculateArch(archPos)
         @pathLine = new (L.Polyline)(
           @pointList
           color: @color
           weight: @weight
           opacity: 0.8
-          smoothFactor: 1)               
-        this.setPopup() 
+          smoothFactor: 1)
+        this.setPopup()
       )
 
     L.mapPath = (flight, map) ->
@@ -120,7 +120,7 @@ if Meteor.isClient
     L.MapPaths =
       mapPaths : []
       factors: []
-      getLayerGroup: () ->        
+      getLayerGroup: () ->
         return L.layerGroup(@mapPaths)
       getFactorById:(id)->
         for factor in @factors
@@ -137,20 +137,20 @@ if Meteor.isClient
       addFactor: (id, factor, map) ->
         if @getFactorById(id) is false
           return
-        factor._id = id            
+        factor._id = id
         exists = false
         path = @getMapPathByFactor(factor)
         if path isnt false
           path.seats += factor["Seats"]
           path.flights++
           path.refresh()
-          @factors.push factor          
+          @factors.push factor
         if path is false
           currentPath = new L.MapPath(factor, map).addTo(map)
           @factors.push factor
       removeFactor: (id) ->
         for tempMapPath in @mapPaths
-          if tempMapPath? and tempMapPath.id is id     
+          if tempMapPath? and tempMapPath.id is id
             tempMapPath.hide()
             removeDest = true
             removeOrig = true
@@ -164,19 +164,19 @@ if Meteor.isClient
               if ( d2.id is d1.id or d1.id is o2.id) and tempMapPath isnt tempMapPath
                 removeDest = false
             if removeDest
-              tempMapPath.destination.hide()              
+              tempMapPath.destination.hide()
               L.MapNodes.mapNodes.splice(L.MapNodes.mapNodes.indexOf(tempMapPath.destination), 1)
             if removeOrig
               tempMapPath.origin.hide()
               L.MapNodes.mapNodes.splice(L.MapNodes.mapNodes.indexOf(tempMapPath.origin), 1)
-            @mapPaths.splice(@mapPaths.indexOf(tempMapPath), 1)            
-        return  
+            @mapPaths.splice(@mapPaths.indexOf(tempMapPath), 1)
+        return
       updatePath: (id, mapPath, map) ->
         for tempMapPath in @mapPaths
           if tempMapPath.id is id
             tempMapPath.hide()
             tempMapPath.update(mapPath)
-            tempMapPath.show()           
+            tempMapPath.show()
       showPath: (mapPath) ->
         mapPath.show()
       hidePath: (mapPath) ->
@@ -208,7 +208,7 @@ if Meteor.isClient
       state: null
       stateName: null
       wac: null
-      key: null      
+      key: null
       map: null
       marker: null
       onAdd: (map) ->
@@ -219,10 +219,10 @@ if Meteor.isClient
         return
       setPopup: () ->
         popup = new L.popup()
-        div = L.DomUtil.create("div","")       
+        div = L.DomUtil.create("div","")
         Blaze.renderWithData(Template.nodeDetails, this, div);
         popup.setContent(div)
-        @marker.bindPopup(popup);        
+        @marker.bindPopup(popup);
       initialize: (node, map) ->
         @map = map
         @visible = true
@@ -238,7 +238,7 @@ if Meteor.isClient
         @stateName = node['State Name']
         @wac= node.WAC
         @key= node.key
-        @latlng = new L.LatLng(node.loc.coordinates[1],node.loc.coordinates[0])        
+        @latlng = new L.LatLng(node.loc.coordinates[1],node.loc.coordinates[0])
         if !L.MapNodes.contains(this)
           @marker = L.marker(@latlng)
           L.MapNodes.addInitializedNode(this)
@@ -246,7 +246,7 @@ if Meteor.isClient
         else
           for node in L.MapNodes.mapNodes
             if node.id is @id
-              @marker = node.marker           
+              @marker = node.marker
       equals: (otherNode) ->
         return (otherNode.latlng.lat is this.latlng.lat) and (otherNode.latlng.lng is this.latlng.lng)
       hide: () ->
@@ -255,13 +255,13 @@ if Meteor.isClient
       show: () ->
       	@visible = true
       	@marker = L.marker(@latlng)
-      	this.setPopup()   	
+      	this.setPopup()
       )
 
     L.MapNodes =
       mapNodes : []
       getLayerGroup: () ->
-        return L.layerGroup(@mapNodes)         
+        return L.layerGroup(@mapNodes)
       addInitializedNode : (node) ->
         @mapNodes.push(node)
       addNode: (mapNode) ->
@@ -274,7 +274,7 @@ if Meteor.isClient
       removeNode: (id) ->
         for tempMapNode in @mapNodes
           if tempMapNode.id is id
-            tempMapNode.hide()          
+            tempMapNode.hide()
             @mapNodes.splice(@mapNodes.indexOf(tempMapNode), 1)
             return
       updateNode: (mapNode) ->
