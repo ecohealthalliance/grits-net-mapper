@@ -5,99 +5,47 @@ if Meteor.isClient
       id: null
       map: null
       smoothFactor: 1.0
-      pointList: null
-      IDLpointList: null
-      pathLine: null
-      IDLpathLine: null
+      pointList: null      
+      pathLine: null      
       origin: null
       destination: null
-      destWAC: null
-      alliance: null
-      arrFlag: null
-      arrTerm: null
-      arrTime: null
-      blockMins: null
-      date: null
-      depTerm: null
-      depTime: null
-      equip: null
-      flight: null
-      miles: null
-      mktgAl: null
-      opsAl: null
-      ops_day: null
-      ops_week: null
+      destWAC: null      
+      miles: null      
       origWAC: null
       seats: null
       seats_week: null
-      stops: null      
-      visible: false
-      origin_terminal: null
-      destination_terminal: null
-      archPosition: 0 #defines the arch position for drawing the path on a curve to avoid path overlap
+      stops: null   
+      flights: 0      
+      visible: false        
       onAdd: (map) ->
         this.show()
         return
       show: () ->
         @visible = true
         @pathLine.addTo(@map) if @pathLine isnt null
-        @IDLpathLine.addTo(@map) if @IDLpathLine isnt null
         @origin.addTo(@map) if @origin isnt null
         @destination.addTo(@map) if @destination isnt null
         return
       hide: () ->
       	@visible = false
-      	@map.removeLayer @pathLine if @pathLine isnt null
-      	@map.removeLayer @IDLpathLine if @IDLpathLine isnt null
-      	return    	
-      update: (flight) ->
-        @alliance = flight.Alliance
-        @arrFlag = flight['Arr Flag'] if flight['Arr Flag']?
-        @arrTerm = flight['Arr Term'] if flight['Arr Term']?
-        @arrTime = flight['Arr Time'] if flight['Arr Term']?
-        @blockMins = flight['Block Mins'] if flight['Block Mins']?
+      	@map.removeLayer @pathLine if @pathLine isnt null      	
+      	return
+      update: (flight) ->        
         @origin = new L.MapNode(flight.Orig, @map) if flight.origin?
-        @destination = new L.MapNode(flight.Dest, @map) if flight.Dest?
-        @date= flight.Date? if flight.Date
-        @depTerm= flight['Dep Term'] if flight['Dep Term']?
-        @depTime= flight['Dep Time'] if flight['Dep Time']?
-        @equip= flight.Equip if flight.Equip?
-        @flight= flight.Flight if flight.Flight?
-        @miles= flight.Miles if flight.Miles?
-        @mktgAl= flight['Mktg Al'] if flight['Mktg Al']?
-        @opsAl= flight['Op Al'] if flight['Op Al']?
-        @ops_day= flight['Ops Day'] if flight['Ops Day']?
-        @ops_week = flight['Ops/Week'] if flight['Ops/Week']?
+        @destination = new L.MapNode(flight.Dest, @map) if flight.Dest?        
+        @miles= flight.Miles if flight.Miles?        
         @origWAC = flight['Orig WAC'] if flight['Orig WAC']
         @seats = flight.Seats if flight.Seats?
-        @seats_week= flight['Seats/Week'] if flight['Seats/Week']?
-        @stops = flight.Stops if flight.Stops?        
+        @seats_week= flight['Seats/Week'] if flight['Seats/Week']?        
         this.setPopup()
         return
       initialize: (flight, map) ->
         @map = map
         @visible = true
-        @id = flight['_id']
-        @alliance = flight.Alliance
-        @arrFlag = flight['Arr Flag']
-        @arrTerm = flight['Arr Term']
-        @arrTime = flight['Arr Time']
-        @blockMins = flight['Block Mins']
-        @arrTime = flight['Arr Time']
-        @arrTime = flight['Arr Time']
+        @id = flight['_id']       
         @origin = new L.MapNode(flight.Orig, @map) if flight.Orig?
-        @destination = new L.MapNode(flight.Dest, @map) if flight.Dest?
-        @blockMins= flight['Block Mins']
-        @date= flight.Date
-        @depTerm= flight['Dep Term']
-        @depTime= flight['Dep Time']
-        @equip= flight.Equip
-        @flight= flight.Flight
-        @miles= flight.Miles
-        @mktgAl= flight['Mktg Al']
-        @opsAl= flight['Op Al']
-        @ops_day= flight['Ops Day']
-        @ops_week = flight['Ops/Week']
+        @destination = new L.MapNode(flight.Dest, @map) if flight.Dest?        
+        @miles= flight.Miles        
         @origWAC = flight['Orig WAC']
         @seats = flight.Seats
         @seats_week= flight['Seats/Week']
@@ -105,63 +53,48 @@ if Meteor.isClient
         @pointList = [@origin.latlng, @destination.latlng]
         L.MapPaths.addInitializedPath(this)
         this.drawPath()
-      calculateArch: (archPos)->
-        orgDestDist = Meteor.leafnav.getDistance(@origin.latlng, @destination.latlng, "K")
-        #v this works for north south
-        pm = @origin.latlng.lng < @destination.latlng.lng or @origin.latlng.lat < @destination.latlng.lat? true : false     
-        pts = 100.0
-        bng = Math.floor(Meteor.leafnav.getBearing(@origin.latlng, @destination.latlng))
-        rbng = Math.ceil(Meteor.leafnav.getBearing(@destination.latlng, @origin.latlng))       
-        @archPosition = (archPos.length)
-        latArch = 0.0
-        lngArch = 0.0
-        distBetweenPoints = orgDestDist / pts
-        currentPoint = @origin.latlng
-        ptCtr = 1
-        arcCoords = []
-        IDLarcCoords = []        
-        arcCoords.push(currentPoint)
-        keepDrawing = true
-        gain = .10 * @archPosition 
-        IDLsplit = false       
-        while ptCtr < pts and keepDrawing
-          if Meteor.leafnav.getDistance(currentPoint, @destination.latlng) > distBetweenPoints
-            if @archPosition isnt 0
-              #spread gain across latitude and longitude based on coordinate bearing relation.
-              if ptCtr < (pts/2)
-                latArch += (gain * ((180-(bng+rbng))/180))
-                lngArch += (gain * ((bng+rbng)/180))
-              else
-                latArch -= (gain * ((180-(bng+rbng))/180))
-                lngArch -= (gain * ((bng+rbng)/180))            
-            currentPoint = Meteor.leafnav.calculateNewPositionArch(currentPoint, distBetweenPoints, Meteor.leafnav.getBearing(currentPoint, @destination.latlng), latArch*.01, lngArch*.01, pm)
-            if currentPoint.lng > 0 and arcCoords[arcCoords.length-1].lng < 0  and currentPoint.lng > 5
-              IDLsplit = true
-            if currentPoint.lng < 0 and arcCoords[arcCoords.length-1].lng > 0 and currentPoint.lng < -5
-              IDLsplit = true
-            if IDLsplit
-              IDLarcCoords.push(currentPoint)
-            else
-              arcCoords.push(currentPoint)
-            ptCtr++
+      midPoint:(points, ud) ->
+        midPoint = []
+        latDif = Math.abs(points[0].lat - (points[1].lat))
+        if points[0].lat > points[1].lat
+          if ud
+            midPoint[0] = points[1].lat + latDif/4
           else
-            keepDrawing = false
-        if IDLsplit                             
-          IDLarcCoords.push(@destination.latlng)
+            midPoint[0] = points[0].lat - latDif/4
         else
-          arcCoords.push(@destination.latlng)
-        @pointList = arcCoords
-        @IDLpointList = IDLarcCoords
+          if ud
+            midPoint[0] = points[1].lat + latDif/4
+          else
+            midPoint[0] = points[1].lat - latDif/4
+        midPoint[1] = (points[0].lng + points[1].lng) / 2
+        midPoint
+      calculateArch:()->
+        line =
+          'geometry':
+            'coordinates': [
+              [@origin.latlng.lat, @origin.latlng.lng]
+              @midPoint([@origin.latlng, @destination.latlng], true)
+              [@destination.latlng.lat, @destination.latlng.lng]
+              ]
+        curved = turf.bezier(line, 10000, 1)
+        @pointList = curved.geometry.coordinates      
+      refresh: () ->
+        this.setPopup()
+        this.hide()
+        this.drawPath()
+        this.show()      
       setPopup: () ->
         popup = new L.popup()
         div = L.DomUtil.create("div","")       
         Blaze.renderWithData(Template.pathDetails, this, div);
         popup.setContent(div)
-        @pathLine.bindPopup(popup);
-        @IDLpathLine.bindPopup(popup) if @IDLpathLine isnt null
-      setStyle: () ->
-        @color = '#'+Math.floor(Math.random()*16777215).toString(16)
-        @weight = Math.floor(Math.random() * 5) + 5  
+        @pathLine.bindPopup(popup);        
+      setStyle: () ->                
+        mid = (100 - Math.floor((@seats)/100)).toString()
+        if mid < 10
+          mid = "0"+ mid        
+        @color = '#99'+ mid + "00"
+        @weight = @seats / 250  + 2
       drawPath: () ->
         this.setStyle()
         @visible = true              
@@ -170,23 +103,14 @@ if Meteor.isClient
         for mapPath in L.MapPaths.mapPaths
           if mapPath isnt this
             if (mapPath.origin.equals @origin) and (mapPath.destination.equals @destination)
-              archPos[mapPath.archPosition]=true
-            #if (mapPath.origin.equals @destination) and (mapPath.destination.equals @origin)
-            #  archPos[mapPath.archPosition]=true
-        this.calculateArch(archPos)              
+              archPos[mapPath.archPosition]=true           
+        this.calculateArch(archPos)
         @pathLine = new (L.Polyline)(
           @pointList
           color: @color
           weight: @weight
           opacity: 0.8
-          smoothFactor: 1)
-        if @IDLpointList isnt null
-          @IDLpathLine = new (L.Polyline)(
-            @IDLpointList
-            color: @color
-            weight: @weight
-            opacity: 0.8
-            smoothFactor: 1)            
+          smoothFactor: 1)               
         this.setPopup() 
       )
 
@@ -195,34 +119,49 @@ if Meteor.isClient
 
     L.MapPaths =
       mapPaths : []
+      factors: []
       getLayerGroup: () ->        
-        return L.layerGroup(@mapPaths)           
-      mapPathCount : () ->
-        @mapPaths.length
+        return L.layerGroup(@mapPaths)
+      getFactorById:(id)->
+        for factor in @factors
+          if factor._id is id
+            return factor
+        return false
+      getMapPathByFactor:(factor)->
+        for tempMapPath in @mapPaths
+          if tempMapPath.origin.id is factor["Orig"]._id and tempMapPath.destination.id is factor["Dest"]._id
+            return tempMapPath
+        return false
       addInitializedPath: (mapPath) ->
         @mapPaths.push(mapPath)
-      addPath: (id, mapPath, map) ->
-        mapPath._id = id            
+      addFactor: (id, factor, map) ->
+        if @getFactorById(id) is false
+          return
+        factor._id = id            
         exists = false
+        path = @getMapPathByFactor(factor)
+        if path isnt false
+          path.seats += factor["Seats"]
+          path.flights++
+          path.refresh()
+          @factors.push factor          
+        if path is false
+          currentPath = new L.MapPath(factor, map).addTo(map)
+          @factors.push factor
+      removeFactor: (id) ->
         for tempMapPath in @mapPaths
-          if tempMapPath.id is mapPath["_id"]
-            exists = true
-        if !exists
-          new L.MapPath(mapPath, map).addTo(map)
-      removePath: (id) ->
-        for tempMapPath in @mapPaths
-          if tempMapPath.id is id            
+          if tempMapPath? and tempMapPath.id is id     
             tempMapPath.hide()
             removeDest = true
             removeOrig = true
             o1 = tempMapPath.origin
             d1 = tempMapPath.destination
-            for tempMapPath2 in @mapPaths
-              o2 = tempMapPath2.origin
-              d2 = tempMapPath2.destination
-              if ( o2.id is o1.id or o1.id is d2.id) and tempMapPath isnt tempMapPath2
+            for tempMapPath in @mapPaths
+              o2 = tempMapPath.origin
+              d2 = tempMapPath.destination
+              if ( o2.id is o1.id or o1.id is d2.id) and tempMapPath isnt tempMapPath
                 removeOrig = false
-              if ( d2.id is d1.id or d1.id is o2.id) and tempMapPath isnt tempMapPath2
+              if ( d2.id is d1.id or d1.id is o2.id) and tempMapPath isnt tempMapPath
                 removeDest = false
             if removeDest
               tempMapPath.destination.hide()              
