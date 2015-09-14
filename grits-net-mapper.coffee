@@ -12,7 +12,7 @@ if Meteor.isClient
       destWAC: null      
       miles: null      
       origWAC: null
-      seats: null
+      totalSeats: null
       seats_week: null
       stops: null   
       flights: 0      
@@ -35,7 +35,7 @@ if Meteor.isClient
         @destination = new L.MapNode(flight.Dest, @map) if flight.Dest?        
         @miles= flight.Miles if flight.Miles?        
         @origWAC = flight['Orig WAC'] if flight['Orig WAC']
-        @seats = flight.Seats if flight.Seats?
+        @totalSeats = flight.totalSeats if flight.totalSeats?
         @seats_week= flight['Seats/Week'] if flight['Seats/Week']?        
         this.setPopup()
         return
@@ -43,11 +43,11 @@ if Meteor.isClient
         @map = map
         @visible = true
         @id = flight['_id']       
-        @origin = new L.MapNode(flight.Orig, @map) if flight.Orig?
-        @destination = new L.MapNode(flight.Dest, @map) if flight.Dest?        
+        @origin = new L.MapNode(flight.departureAirport, @map) if flight.departureAirport?
+        @destination = new L.MapNode(flight.arrivalAirport, @map) if flight.arrivalAirport?        
         @miles= flight.Miles        
         @origWAC = flight['Orig WAC']
-        @seats = flight.Seats
+        @totalSeats = flight.totalSeats
         @seats_week= flight['Seats/Week']
         @stops = flight.Stops
         @pointList = [@origin.latlng, @destination.latlng]
@@ -125,27 +125,25 @@ if Meteor.isClient
         return false
       getMapPathByFactor:(factor)->
         for tempMapPath in @mapPaths
-          if tempMapPath.origin.id is factor["Orig"]._id and tempMapPath.destination.id is factor["Dest"]._id
+          if tempMapPath.origin.id is factor["departureAirport"]._id and tempMapPath.destination.id is factor["arrivalAirport"]._id
             return tempMapPath
         return false
       addInitializedPath: (mapPath) ->
         @mapPaths.push(mapPath)
       addFactor: (id, factor, map) ->
-        if @getFactorById(id) isnt false
-          return
+        existingFactor = @getFactorById(id)
+        if existingFactor isnt false
+          @getMapPathByFactor(existingFactor)
         factor._id = id
         path = @getMapPathByFactor(factor)
         if path isnt false
-          path.seats += factor["Seats"]
-          path.flights++
-          path.refresh()
-          @factors.push factor          
+          path.totalSeats += factor["totalSeats"]
         else if path is false
           path = new L.MapPath(factor, map).addTo(map)
-          path.seats = factor["Seats"]
-          path.flights++
-          path.refresh()
-          @factors.push factor
+          path.totalSeats = factor["totalSeats"]
+        @factors.push factor
+        path.flights++
+        path.refresh()
         return path
       removeFactor: (id) ->
         factor = @getFactorById(id)
@@ -153,7 +151,7 @@ if Meteor.isClient
           return false
         @factors.splice(@factors.indexOf(factor), 1)
         path = @getMapPathByFactor(factor)
-        path.seats -= factor["Seats"]
+        path.totalSeats -= factor["totalSeats"]
         path.flights--                  
         path.hide()        
         if path.flights is 0
@@ -208,15 +206,15 @@ if Meteor.isClient
       visible: false
       latlng: null
       city: null
-      code: null
+      state: null
+      stateName: null
       country: null
       countryName: null
       globalRegion: null
+      WAC: null      
+      notes: null      
+      code: null      
       name: null
-      notes: null
-      state: null
-      stateName: null
-      wac: null
       key: null      
       map: null
       marker: null
@@ -235,16 +233,15 @@ if Meteor.isClient
       initialize: (node, map) ->
         @map = map        
         @id = node['_id']
-        @city = node.City
-        @code = node.Code
-        @country = node.Country
-        @countryName = node['Country Name']
-        @globalRegion = node['Global Region']
-        @name = node.Name
-        @notes = node.Notes
-        @state = node.State
-        @stateName = node['State Name']
-        @wac= node.WAC
+        @name = node.name
+        @city = node.city      
+        @state = node.state
+        @stateName = node.stateName
+        @country = node.country
+        @countryName = node.countryName
+        @globalRegion = node.globalRegion
+        @notes = node.notes        
+        @WAC= node.WAC
         @key= node.key
         @latlng = new L.LatLng(node.loc.coordinates[1],node.loc.coordinates[0])        
         if !L.MapNodes.contains(this)
