@@ -4,6 +4,6 @@ describe 'grits-net-mapper', ->
   global.Blaze =
     renderWithData = (one, two, three) ->
       return
-  mapper = require '../../src/grits-net-mapper'
+  mapper = require '../../grits-net-mapper'
   it 'should do nothing', ->
     return

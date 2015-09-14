@@ -1,6 +1,0 @@
-test:
-  pre:
-    - npm run build
-general:
-  artifacts:
-    - "lib"

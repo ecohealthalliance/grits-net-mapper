@@ -1,4 +1,3 @@
-'use strict'
 if Meteor.isClient
   if typeof L != 'undefined'
     L.MapPath =  L.Path.extend(
