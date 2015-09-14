@@ -27,10 +27,10 @@
           if (this.pathLine !== null) {
             this.pathLine.addTo(this.map);
           }
-          if (this.origin !== null) {
+          if (this.origin !== null && this.origin.visible === false) {
             this.origin.addTo(this.map);
           }
-          if (this.destination !== null) {
+          if (this.destination !== null && this.destination.visible === false) {
             this.destination.addTo(this.map);
           }
         },
@@ -124,18 +124,12 @@
           popup.setContent(div);
           return this.pathLine.bindPopup(popup);
         },
-        setStyle: function() {
-          var mid;
-          mid = (100 - Math.floor(this.seats / 100)).toString();
-          if (mid < 10) {
-            mid = "0" + mid;
-          }
-          this.color = '#99' + mid + "00";
-          return this.weight = this.seats / 250 + 2;
+        setStyle: function(color, weight) {
+          this.color = color;
+          return this.weight = weight;
         },
         drawPath: function() {
           var archPos, i, len, mapPath, ref;
-          this.setStyle();
           this.visible = true;
           archPos = [];
           ref = L.MapPaths.mapPaths;
@@ -192,57 +186,70 @@
           return this.mapPaths.push(mapPath);
         },
         addFactor: function(id, factor, map) {
-          var currentPath, exists, path;
-          if (this.getFactorById(id) === false) {
+          var path;
+          if (this.getFactorById(id) !== false) {
             return;
           }
           factor._id = id;
-          exists = false;
           path = this.getMapPathByFactor(factor);
           if (path !== false) {
             path.seats += factor["Seats"];
             path.flights++;
             path.refresh();
             this.factors.push(factor);
+          } else if (path === false) {
+            path = new L.MapPath(factor, map).addTo(map);
+            path.seats = factor["Seats"];
+            path.flights++;
+            path.refresh();
+            this.factors.push(factor);
           }
-          if (path === false) {
-            currentPath = new L.MapPath(factor, map).addTo(map);
-            return this.factors.push(factor);
-          }
+          return path;
         },
         removeFactor: function(id) {
-          var d1, d2, i, j, len, len1, o1, o2, ref, ref1, removeDest, removeOrig, tempMapPath;
-          ref = this.mapPaths;
-          for (i = 0, len = ref.length; i < len; i++) {
-            tempMapPath = ref[i];
-            if ((tempMapPath != null) && tempMapPath.id === id) {
-              tempMapPath.hide();
-              removeDest = true;
-              removeOrig = true;
-              o1 = tempMapPath.origin;
-              d1 = tempMapPath.destination;
-              ref1 = this.mapPaths;
-              for (j = 0, len1 = ref1.length; j < len1; j++) {
-                tempMapPath = ref1[j];
-                o2 = tempMapPath.origin;
-                d2 = tempMapPath.destination;
-                if ((o2.id === o1.id || o1.id === d2.id) && tempMapPath !== tempMapPath) {
-                  removeOrig = false;
-                }
-                if ((d2.id === d1.id || d1.id === o2.id) && tempMapPath !== tempMapPath) {
-                  removeDest = false;
-                }
+          var d1, d2, factor, i, len, o1, o2, path, ref, removeDest, removeOrig, tempMapPath;
+          factor = this.getFactorById(id);
+          if (factor === false) {
+            return false;
+          }
+          this.factors.splice(this.factors.indexOf(factor), 1);
+          path = this.getMapPathByFactor(factor);
+          path.seats -= factor["Seats"];
+          path.flights--;
+          path.hide();
+          if (path.flights === 0) {
+            removeDest = true;
+            removeOrig = true;
+            o1 = path.origin;
+            d1 = path.destination;
+            ref = this.mapPaths;
+            for (i = 0, len = ref.length; i < len; i++) {
+              tempMapPath = ref[i];
+              o2 = tempMapPath.origin;
+              d2 = tempMapPath.destination;
+              if ((o2.id === o1.id || o1.id === d2.id) && tempMapPath !== path) {
+                removeOrig = false;
               }
-              if (removeDest) {
-                tempMapPath.destination.hide();
-                L.MapNodes.mapNodes.splice(L.MapNodes.mapNodes.indexOf(tempMapPath.destination), 1);
+              if ((d2.id === d1.id || d1.id === o2.id) && tempMapPath !== path) {
+                removeDest = false;
               }
-              if (removeOrig) {
-                tempMapPath.origin.hide();
-                L.MapNodes.mapNodes.splice(L.MapNodes.mapNodes.indexOf(tempMapPath.origin), 1);
-              }
-              this.mapPaths.splice(this.mapPaths.indexOf(tempMapPath), 1);
             }
+            if (removeDest) {
+              path.destination.hide();
+              L.MapNodes.mapNodes.splice(L.MapNodes.mapNodes.indexOf(path.destination), 1);
+            }
+            if (removeOrig) {
+              path.origin.hide();
+              L.MapNodes.mapNodes.splice(L.MapNodes.mapNodes.indexOf(path.origin), 1);
+            }
+            this.mapPaths.splice(this.mapPaths.indexOf(path), 1);
+            return false;
+          } else {
+            path.show();
+            return {
+              "path": path,
+              "factor": factor
+            };
           }
         },
         updatePath: function(id, mapPath, map) {
@@ -319,6 +326,7 @@
         }
       };
       L.MapNode = L.Path.extend({
+        visible: false,
         latlng: null,
         city: null,
         code: null,
@@ -352,7 +360,6 @@
         initialize: function(node, map) {
           var i, len, ref, results;
           this.map = map;
-          this.visible = true;
           this.id = node['_id'];
           this.city = node.City;
           this.code = node.Code;

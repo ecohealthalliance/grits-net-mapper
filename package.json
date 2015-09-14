@@ -10,7 +10,7 @@
     "which": "^1.1.2"
   },
   "scripts": {
-    "build": "coffee -c -m -o lib/ src/",
+    "build": "coffee -c -m -o ./ src/",
     "test": "jasmine"
   },
   "repository": {
