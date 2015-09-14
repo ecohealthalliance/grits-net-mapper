@@ -1,4 +1,5 @@
 if Meteor.isClient
+  'use strict'
   if typeof L != 'undefined'
     L.MapPath =  L.Path.extend(
       id: null
@@ -43,7 +44,7 @@ if Meteor.isClient
         @visible = true
         @id = flight['_id']
         @origin = new L.MapNode(flight.departureAirport, @map) if flight.departureAirport?
-        @destination = new L.MapNode(flight.arrivalAirport, @map) if flight.arrivalAirport?        
+        @destination = new L.MapNode(flight.arrivalAirport, @map) if flight.arrivalAirport?
         @miles= flight.Miles
         @origWAC = flight['Orig WAC']
         @totalSeats = flight.totalSeats
@@ -141,8 +142,8 @@ if Meteor.isClient
           path = new L.MapPath(factor, map).addTo(map)
           path.totalSeats = factor["totalSeats"]
         @factors.push factor
-          path.flights++
-          path.refresh()
+        path.flights++
+        path.refresh()
         return path
       removeFactor: (id) ->
         factor = @getFactorById(id)
@@ -210,9 +211,9 @@ if Meteor.isClient
       country: null
       countryName: null
       globalRegion: null
-      WAC: null      
-      notes: null      
-      code: null      
+      WAC: null
+      notes: null
+      code: null
       name: null
       key: null
       map: null
@@ -233,13 +234,13 @@ if Meteor.isClient
         @map = map
         @id = node['_id']
         @name = node.name
-        @city = node.city      
+        @city = node.city
         @state = node.state
         @stateName = node.stateName
         @country = node.country
         @countryName = node.countryName
         @globalRegion = node.globalRegion
-        @notes = node.notes        
+        @notes = node.notes
         @WAC= node.WAC
         @key= node.key
         @latlng = new L.LatLng(node.loc.coordinates[1],node.loc.coordinates[0])
