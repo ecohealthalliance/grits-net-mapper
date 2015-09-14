@@ -7,6 +7,7 @@ Package.describe
 Package.onUse (api) ->
   api.versionsFrom '1.1.0.3'
   api.use 'coffeescript'
+  api.use 'yauh:turfjs-client', 'client'
   api.use 'fuatsengul:leaflet', 'client'
   api.addFiles 'grits-net-mapper.js', [ 'client' ]
   return
