@@ -23,16 +23,16 @@ if Meteor.isClient
       show: () ->
         @visible = true
         @pathLine.addTo(@map) if @pathLine isnt null
-        @origin.addTo(@map) if @origin isnt null and @origin.visible is false
-        @destination.addTo(@map) if @destination isnt null and @destination.visible is false
+        @departureAirport.addTo(@map) if @departureAirport isnt null and @departureAirport.visible is false
+        @arrivalAirport.addTo(@map) if @arrivalAirport isnt null and @arrivalAirport.visible is false
         return
       hide: () ->
       	@visible = false
       	@map.removeLayer @pathLine if @pathLine isnt null
       	return
       update: (flight) ->
-        @origin = new L.MapNode(flight.Orig, @map) if flight.origin?
-        @destination = new L.MapNode(flight.Dest, @map) if flight.Dest?
+        @departureAirport = new L.MapNode(flight.departureAirport, @map) if flight.departureAirport?
+        @arrivalAirport = new L.MapNode(flight.arrivalAirport, @map) if flight.arrivalAirport?
         @miles= flight.Miles if flight.Miles?
         @origWAC = flight['Orig WAC'] if flight['Orig WAC']
         @totalSeats = flight.totalSeats if flight.totalSeats?
@@ -43,14 +43,14 @@ if Meteor.isClient
         @map = map
         @visible = true
         @id = flight['_id']
-        @origin = new L.MapNode(flight.departureAirport, @map) if flight.departureAirport?
-        @destination = new L.MapNode(flight.arrivalAirport, @map) if flight.arrivalAirport?
+        @departureAirport = new L.MapNode(flight.departureAirport, @map) if flight.departureAirport?
+        @arrivalAirport = new L.MapNode(flight.arrivalAirport, @map) if flight.arrivalAirport?
         @miles= flight.Miles
         @origWAC = flight['Orig WAC']
         @totalSeats = flight.totalSeats
         @seats_week= flight['Seats/Week']
         @stops = flight.Stops
-        @pointList = [@origin.latlng, @destination.latlng]
+        @pointList = [@departureAirport.latlng, @arrivalAirport.latlng]
         L.MapPaths.addInitializedPath(this)
         this.drawPath()
       midPoint:(points, ud) ->
@@ -72,12 +72,13 @@ if Meteor.isClient
         line =
           'geometry':
             'coordinates': [
-              [@origin.latlng.lat, @origin.latlng.lng]
-              @midPoint([@origin.latlng, @destination.latlng], true)
-              [@destination.latlng.lat, @destination.latlng.lng]
+              [@departureAirport.latlng.lat, @departureAirport.latlng.lng]
+              @midPoint([@departureAirport.latlng, @arrivalAirport.latlng], true)
+              [@arrivalAirport.latlng.lat, @arrivalAirport.latlng.lng]
               ]
         curved = turf.bezier(line, 10000, 1)
         @pointList = curved.geometry.coordinates
+        @pointList.push @arrivalAirport.latlng
       refresh: () ->
         this.setPopup()
         this.hide()
@@ -98,7 +99,7 @@ if Meteor.isClient
         archPos = []
         for mapPath in L.MapPaths.mapPaths
           if mapPath isnt this
-            if (mapPath.origin.equals @origin) and (mapPath.destination.equals @destination)
+            if (mapPath.departureAirport.equals @departureAirport) and (mapPath.arrivalAirport.equals @arrivalAirport)
               archPos[mapPath.archPosition]=true
         this.calculateArch(archPos)
         @pathLine = new (L.Polyline)(
@@ -125,7 +126,7 @@ if Meteor.isClient
         return false
       getMapPathByFactor:(factor)->
         for tempMapPath in @mapPaths
-          if tempMapPath.origin.id is factor["departureAirport"]._id and tempMapPath.destination.id is factor["arrivalAirport"]._id
+          if tempMapPath.departureAirport.id is factor["departureAirport"]._id and tempMapPath.arrivalAirport.id is factor["arrivalAirport"]._id
             return tempMapPath
         return false
       addInitializedPath: (mapPath) ->
@@ -133,7 +134,7 @@ if Meteor.isClient
       addFactor: (id, factor, map) ->
         existingFactor = @getFactorById(id)
         if existingFactor isnt false
-          @getMapPathByFactor(existingFactor)
+          return @getMapPathByFactor(existingFactor)
         factor._id = id
         path = @getMapPathByFactor(factor)
         if path isnt false
@@ -157,21 +158,21 @@ if Meteor.isClient
         if path.flights is 0
           removeDest = true
           removeOrig = true
-          o1 = path.origin
-          d1 = path.destination
+          o1 = path.departureAirport
+          d1 = path.arrivalAirport
           for tempMapPath in @mapPaths
-            o2 = tempMapPath.origin
-            d2 = tempMapPath.destination
+            o2 = tempMapPath.departureAirport
+            d2 = tempMapPath.arrivalAirport
             if ( o2.id is o1.id or o1.id is d2.id) and tempMapPath isnt path
               removeOrig = false
             if ( d2.id is d1.id or d1.id is o2.id) and tempMapPath isnt path
               removeDest = false
           if removeDest
-            path.destination.hide()
-            L.MapNodes.mapNodes.splice(L.MapNodes.mapNodes.indexOf(path.destination), 1)
+            path.arrivalAirport.hide()
+            L.MapNodes.mapNodes.splice(L.MapNodes.mapNodes.indexOf(path.arrivalAirport), 1)
           if removeOrig
-            path.origin.hide()
-            L.MapNodes.mapNodes.splice(L.MapNodes.mapNodes.indexOf(path.origin), 1)
+            path.departureAirport.hide()
+            L.MapNodes.mapNodes.splice(L.MapNodes.mapNodes.indexOf(path.departureAirport), 1)
           @mapPaths.splice(@mapPaths.indexOf(path), 1)
           return false
         else
@@ -197,9 +198,9 @@ if Meteor.isClient
         L.MapNodes.showAllNodes()
       hideBetween: (mapNodeA, mapNodeB) ->
         for mapPath in @mapPaths
-          if mapPath.origin is mapNodeA and mapPath.destination is mapNodeB
+          if mapPath.departureAirport is mapNodeA and mapPath.arrivalAirport is mapNodeB
             mapPath.hide()
-          if mapPath.origin is mapNodeB and mapPath.destination is mapNodeA
+          if mapPath.departureAirport is mapNodeB and mapPath.arrivalAirport is mapNodeA
             mapPath.hide()
 
     L.MapNode = L.Path.extend(
