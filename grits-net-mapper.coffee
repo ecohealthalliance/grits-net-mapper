@@ -7,6 +7,7 @@ if Meteor.isClient
       smoothFactor: 1.0
       pointList: null
       pathLine: null
+      pathLineDecorator: null
       origin: null
       destination: null
       destWAC: null
@@ -23,12 +24,14 @@ if Meteor.isClient
       show: () ->
         @visible = true
         @pathLine.addTo(@map) if @pathLine isnt null
+        @pathLineDecorator.addTo(@map) if @pathLineDecorator isnt null
         @departureAirport.addTo(@map) if @departureAirport isnt null and @departureAirport.visible is false
         @arrivalAirport.addTo(@map) if @arrivalAirport isnt null and @arrivalAirport.visible is false
         return
       hide: () ->
       	@visible = false
       	@map.removeLayer @pathLine if @pathLine isnt null
+      	@map.removeLayer @pathLineDecorator if @pathLineDecorator isnt null
       	return
       update: (flight) ->
         @departureAirport = new L.MapNode(flight.departureAirport, @map) if flight.departureAirport?
@@ -108,6 +111,11 @@ if Meteor.isClient
           weight: @weight
           opacity: 0.8
           smoothFactor: 1)
+        @pathLineDecorator = L.polylineDecorator(@pathLine, {
+          patterns: [
+            {offset: '50px', repeat: '100px', symbol: new L.Symbol.ArrowHead({pixelSize: 20, pathOptions:{color:@color}})}
+          ]
+    })
         this.setPopup()
       )
 

@@ -10,6 +10,9 @@ Package.onUse(function configureApi(api) {
   api.use('coffeescript');
   api.use('yauh:turfjs-client', 'client');
   api.use('fuatsengul:leaflet', 'client');
+  api.addFiles('L.LineUtil.PolylineDecorator.js', [ 'client' ]);
+  api.addFiles('L.Symbol.js', [ 'client' ]);
+  api.addFiles('L.PolylineDecorator.js', [ 'client' ]);
   api.addFiles('grits-net-mapper.coffee', [ 'client' ]);
 });
 Package.onTest(function configureApi(api) {
