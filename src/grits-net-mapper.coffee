@@ -1,4 +1,5 @@
 require "leaflet-polylinedecorator/leaflet.polylineDecorator.js"
+turf = require "turf"
 
 L.MapPath = L.Path.extend(
   id: null

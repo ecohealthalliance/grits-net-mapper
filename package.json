@@ -1,6 +1,6 @@
 {
   "name": "grits-net-mapper",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": "true",
   "description": "",
   "scripts": {
@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/ecohealthalliance/grits-net-mapper#readme",
   "dependencies": {
-    "leaflet-polylinedecorator": "git+https://github.com/sjmatta/Leaflet.PolylineDecorator.git#978e97d05ee18abe672f4913c1ec5fdd83872ca6"
+    "leaflet-polylinedecorator": "git+https://github.com/sjmatta/Leaflet.PolylineDecorator.git#978e97d05ee18abe672f4913c1ec5fdd83872ca6",
+    "turf": "^2.0.2"
   }
 }
