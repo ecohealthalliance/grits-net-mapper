@@ -2,17 +2,20 @@
   "name": "grits-net-mapper",
   "version": "0.2.0",
   "description": "",
+  "scripts": {
+    "prepublish": "webpack",
+    "test": "jasmine"
+  },
   "devDependencies": {
     "babel-eslint": "^4.1.2",
+    "coffee-loader": "^0.7.2",
     "coffee-script": "^1.10.0",
     "coffeelint": "^1.11.1",
     "eslint": "^1.4.1",
     "eslint-config-airbnb": "0.0.8",
     "jasmine": "^2.3.2",
+    "webpack": "^1.12.2",
     "which": "^1.1.2"
-  },
-  "scripts": {
-    "test": "jasmine"
   },
   "repository": {
     "type": "git",
@@ -21,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/ecohealthalliance/grits-net-mapper/issues"
   },
-  "homepage": "https://github.com/ecohealthalliance/grits-net-mapper#readme"
+  "homepage": "https://github.com/ecohealthalliance/grits-net-mapper#readme",
+  "dependencies": {
+    "leaflet-polylinedecorator": "git+https://github.com/sjmatta/Leaflet.PolylineDecorator.git#978e97d05ee18abe672f4913c1ec5fdd83872ca6"
+  }
 }
