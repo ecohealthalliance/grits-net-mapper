@@ -5,7 +5,7 @@ module.exports = {
   entry: [
     './src/grits-net-mapper'
   ],
-  devtool: "source-map",
+  devtool: "eval",
   debug: true,
   output: {
     path: path.join(__dirname, "lib"),
