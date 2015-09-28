@@ -1,0 +1,6 @@
+test:
+  post:
+    - npm run prepublish
+general:
+  artifacts:
+    - "lib"
