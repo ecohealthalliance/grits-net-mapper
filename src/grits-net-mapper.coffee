@@ -120,7 +120,7 @@ L.MapPath = L.Path.extend(
     popup = undefined
     popup = new (L.popup)
     div = L.DomUtil.create('div', '')
-    Blaze.renderWithData Template.pathDetails, this, div
+    div = popupBuilder.buildPathPopup(this)
     popup.setContent div
     @pathLine.bindPopup popup
   setStyle: (color, weight) ->
@@ -363,8 +363,7 @@ L.MapNode = L.Path.extend(
     div = undefined
     popup = undefined
     popup = new (L.popup)
-    div = L.DomUtil.create('div', '')
-    Blaze.renderWithData Template.nodeDetails, this, div
+    div = popupBuilder.buildNodePopup(this)
     popup.setContent div
     @marker.bindPopup popup
   initialize: (node, map) ->
