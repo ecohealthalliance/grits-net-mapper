@@ -388,7 +388,7 @@ L.MapNode = L.Path.extend(
     if !L.MapNodes.contains(this)
       @marker = L.marker(@latlng)
       @marker.on 'click', (e) ->
-        Template.map.nodeEvent L.MapNodes.getNodeByMarker(e.target._leaflet_id)
+        nodeHandler.click L.MapNodes.getNodeByMarker(e.target._leaflet_id)
       L.MapNodes.addInitializedNode this
       @setPopup()
     else
