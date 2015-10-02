@@ -52,7 +52,6 @@ L.MapPath = L.Path.extend(
       @totalSeats = flight.totalSeats
     if flight['Seats/Week'] != null
       @seats_week = flight['Seats/Week']
-    @setPopup()
     return
   initialize: (flight, map) ->
     @map = map
@@ -111,18 +110,9 @@ L.MapPath = L.Path.extend(
     @pointList = curved.geometry.coordinates
     @pointList.push @arrivalAirport.latlng
   refresh: ->
-    @setPopup()
     @hide()
     @drawPath()
     @show()
-  setPopup: ->
-    div = undefined
-    popup = undefined
-    popup = new (L.popup)
-    div = L.DomUtil.create('div', '')
-    div = popupBuilder.buildPathPopup(this)
-    popup.setContent div
-    @pathLine.bindPopup popup
   setStyle: (color, weight) ->
     @color = color
     @weight = weight
@@ -148,7 +138,8 @@ L.MapPath = L.Path.extend(
       color: @color
       weight: @weight
       opacity: 0.8
-      smoothFactor: 1)
+      smoothFactor: 1).on 'click', (e) ->
+        pathHandler.click L.MapPaths.getPathByPathLine(e.target._leaflet_id)
     @pathLineDecorator = L.polylineDecorator(@pathLine, patterns: [ {
       offset: '50px'
       repeat: '100px'
@@ -156,7 +147,6 @@ L.MapPath = L.Path.extend(
         pixelSize: 20
         pathOptions: color: @color)
     } ])
-    @setPopup()
 )
 
 L.mapPath = (flight, map) ->
@@ -165,6 +155,11 @@ L.mapPath = (flight, map) ->
 L.MapPaths =
   mapPaths: []
   factors: []
+  getPathByPathLine: (pathId) ->
+    for path in @mapPaths
+      if path.pathLine._leaflet_id is pathId
+        return path
+    return false
   getLayerGroup: ->
     L.layerGroup @mapPaths
   getFactorById: (id) ->
@@ -359,13 +354,6 @@ L.MapNode = L.Path.extend(
   onRemove: (map) ->
     map.removeLayer @marker
     return
-  setPopup: ->
-    div = undefined
-    popup = undefined
-    popup = new (L.popup)
-    div = popupBuilder.buildNodePopup(this)
-    popup.setContent div
-    @marker.bindPopup popup
   initialize: (node, map) ->
     i = undefined
     len = undefined
@@ -389,7 +377,6 @@ L.MapNode = L.Path.extend(
       @marker.on 'click', (e) ->
         nodeHandler.click L.MapNodes.getNodeByMarker(e.target._leaflet_id)
       L.MapNodes.addInitializedNode this
-      @setPopup()
     else
       ref = L.MapNodes.mapNodes
       results = []
@@ -411,7 +398,6 @@ L.MapNode = L.Path.extend(
   show: ->
     @visible = true
     @marker = L.marker(@latlng)
-    @setPopup()
 )
 L.MapNodes =
   selectedNode: null
