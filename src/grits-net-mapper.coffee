@@ -8,8 +8,8 @@ L.MapPath = L.Path.extend(
   pointList: null
   pathLine: null
   pathLineDecorator: null
-  origin: null
-  destination: null
+  departureAirport: null
+  arrivalAirport: null
   destWAC: null
   miles: null
   origWAC: null
@@ -479,7 +479,7 @@ L.MapNodes =
     len = ref.length
     while i < len
       mapNode = ref[i]
-      if mapNode.id == node.id
+      if mapNode.id is node.id
         mapNodesContains = true
       i++
     mapNodesContains
