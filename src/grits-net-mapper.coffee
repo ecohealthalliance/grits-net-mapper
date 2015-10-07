@@ -18,6 +18,7 @@ L.MapPath = L.Path.extend(
   stops: null
   flights: 0
   visible: false
+  normalizedPercent: 0
   onAdd: (map) ->
     @show()
     return
@@ -71,7 +72,6 @@ L.MapPath = L.Path.extend(
       @arrivalAirport.latlng
     ]
     L.MapPaths.addInitializedPath this
-    @drawPath()
   midPoint: (points, ud) ->
     latDif = undefined
     midPoint = undefined
@@ -116,6 +116,7 @@ L.MapPath = L.Path.extend(
   setStyle: (color, weight) ->
     @color = color
     @weight = weight
+    @refresh()
   drawPath: ->
     archPos = undefined
     i = undefined
@@ -144,7 +145,7 @@ L.MapPath = L.Path.extend(
       offset: '50px'
       repeat: '100px'
       symbol: new (L.Symbol.ArrowHead)(
-        pixelSize: 20
+        pixelSize:  5 * @weight
         pathOptions: color: @color)
     } ])
 )
@@ -207,21 +208,11 @@ L.MapPaths =
       path.totalSeats = factor['totalSeats']
     @factors.push factor
     path.flights++
-    path.refresh()
     path
   removeFactor: (id) ->
-    d1 = undefined
-    d2 = undefined
     factor = undefined
-    i = undefined
-    len = undefined
-    o1 = undefined
-    o2 = undefined
     path = undefined
     ref = undefined
-    removeDest = undefined
-    removeOrig = undefined
-    tempMapPath = undefined
     factor = @getFactorById(id)
     if factor == false
       return false
