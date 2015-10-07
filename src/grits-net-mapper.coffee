@@ -18,6 +18,7 @@ L.MapPath = L.Path.extend(
   stops: null
   flights: 0
   visible: false
+  normalizedPercent: 0
   onAdd: (map) ->
     @show()
     return
@@ -52,7 +53,6 @@ L.MapPath = L.Path.extend(
       @totalSeats = flight.totalSeats
     if flight['Seats/Week'] != null
       @seats_week = flight['Seats/Week']
-    @setPopup()
     return
   initialize: (flight, map) ->
     @map = map
@@ -72,7 +72,6 @@ L.MapPath = L.Path.extend(
       @arrivalAirport.latlng
     ]
     L.MapPaths.addInitializedPath this
-    @drawPath()
   midPoint: (points, ud) ->
     latDif = undefined
     midPoint = undefined
@@ -111,21 +110,13 @@ L.MapPath = L.Path.extend(
     @pointList = curved.geometry.coordinates
     @pointList.push @arrivalAirport.latlng
   refresh: ->
-    @setPopup()
     @hide()
     @drawPath()
     @show()
-  setPopup: ->
-    div = undefined
-    popup = undefined
-    popup = new (L.popup)
-    div = L.DomUtil.create('div', '')
-    Blaze.renderWithData Template.pathDetails, this, div
-    popup.setContent div
-    @pathLine.bindPopup popup
   setStyle: (color, weight) ->
     @color = color
     @weight = weight
+    @refresh()
   drawPath: ->
     archPos = undefined
     i = undefined
@@ -148,15 +139,15 @@ L.MapPath = L.Path.extend(
       color: @color
       weight: @weight
       opacity: 0.8
-      smoothFactor: 1)
+      smoothFactor: 1).on 'click', (e) ->
+        pathHandler.click L.MapPaths.getPathByPathLine(e.target._leaflet_id)
     @pathLineDecorator = L.polylineDecorator(@pathLine, patterns: [ {
       offset: '50px'
       repeat: '100px'
       symbol: new (L.Symbol.ArrowHead)(
-        pixelSize: 20
+        pixelSize:  5 * @weight
         pathOptions: color: @color)
     } ])
-    @setPopup()
 )
 
 L.mapPath = (flight, map) ->
@@ -165,6 +156,11 @@ L.mapPath = (flight, map) ->
 L.MapPaths =
   mapPaths: []
   factors: []
+  getPathByPathLine: (pathId) ->
+    for path in @mapPaths
+      if path.pathLine._leaflet_id is pathId
+        return path
+    return false
   getLayerGroup: ->
     L.layerGroup @mapPaths
   getFactorById: (id) ->
@@ -212,21 +208,11 @@ L.MapPaths =
       path.totalSeats = factor['totalSeats']
     @factors.push factor
     path.flights++
-    path.refresh()
     path
   removeFactor: (id) ->
-    d1 = undefined
-    d2 = undefined
     factor = undefined
-    i = undefined
-    len = undefined
-    o1 = undefined
-    o2 = undefined
     path = undefined
     ref = undefined
-    removeDest = undefined
-    removeOrig = undefined
-    tempMapPath = undefined
     factor = @getFactorById(id)
     if factor == false
       return false
@@ -359,14 +345,6 @@ L.MapNode = L.Path.extend(
   onRemove: (map) ->
     map.removeLayer @marker
     return
-  setPopup: ->
-    div = undefined
-    popup = undefined
-    popup = new (L.popup)
-    div = L.DomUtil.create('div', '')
-    Blaze.renderWithData Template.nodeDetails, this, div
-    popup.setContent div
-    @marker.bindPopup popup
   initialize: (node, map) ->
     i = undefined
     len = undefined
@@ -388,9 +366,8 @@ L.MapNode = L.Path.extend(
     if !L.MapNodes.contains(this)
       @marker = L.marker(@latlng)
       @marker.on 'click', (e) ->
-        Template.map.nodeEvent L.MapNodes.getNodeByMarker(e.target._leaflet_id)
+        nodeHandler.click L.MapNodes.getNodeByMarker(e.target._leaflet_id)
       L.MapNodes.addInitializedNode this
-      @setPopup()
     else
       ref = L.MapNodes.mapNodes
       results = []
@@ -412,7 +389,6 @@ L.MapNode = L.Path.extend(
   show: ->
     @visible = true
     @marker = L.marker(@latlng)
-    @setPopup()
 )
 L.MapNodes =
   selectedNode: null

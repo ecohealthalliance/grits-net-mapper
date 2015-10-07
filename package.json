@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/ecohealthalliance/grits-net-mapper#readme",
   "dependencies": {
-    "leaflet-polylinedecorator": "git+https://github.com/sjmatta/Leaflet.PolylineDecorator.git#978e97d05ee18abe672f4913c1ec5fdd83872ca6",
+    "leaflet-polylinedecorator": "https://github.com/bbecquet/Leaflet.PolylineDecorator/archive/v1.0.0.tar.gz",
     "turf": "^2.0.2"
   }
 }
