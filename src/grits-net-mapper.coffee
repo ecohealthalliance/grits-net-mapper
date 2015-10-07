@@ -40,20 +40,6 @@ L.MapPath = L.Path.extend(
     if @pathLineDecorator != null
       @map.removeLayer @pathLineDecorator
     return
-  update: (flight) ->
-    if flight.departureAirport != null
-      @departureAirport = new (L.MapNode)(flight.departureAirport, @map)
-    if flight.arrivalAirport != null
-      @arrivalAirport = new (L.MapNode)(flight.arrivalAirport, @map)
-    if flight.Miles != null
-      @miles = flight.Miles
-    if flight['Orig WAC']
-      @origWAC = flight['Orig WAC']
-    if flight.totalSeats != null
-      @totalSeats = flight.totalSeats
-    if flight['Seats/Week'] != null
-      @seats_week = flight['Seats/Week']
-    return
   initialize: (flight, map) ->
     @map = map
     @visible = true
@@ -145,7 +131,7 @@ L.MapPath = L.Path.extend(
       offset: '50px'
       repeat: '100px'
       symbol: new (L.Symbol.ArrowHead)(
-        pixelSize:  5 * @weight
+        pixelSize: 5 * @weight
         pathOptions: color: @color)
     } ])
 )
@@ -231,26 +217,13 @@ L.MapPaths =
         'path': path
         'factor': factor
       }
-  updatePath: (id, mapPath, map) ->
-    i = undefined
-    len = undefined
-    ref = undefined
-    results = undefined
-    tempMapPath = undefined
-    ref = @mapPaths
-    results = []
-    i = 0
-    len = ref.length
-    while i < len
-      tempMapPath = ref[i]
-      if tempMapPath.id == id
-        tempMapPath.hide()
-        tempMapPath.update mapPath
-        results.push tempMapPath.show()
-      else
-        results.push undefined
-      i++
-    results
+  updateFactor: (id, newFactor, map) ->
+    oldFactor = @getFactorById(id)
+    path = @getMapPathByFactor(oldFactor)
+    path.totalSeats -= oldFactor['totalSeats']
+    path.totalSeats += newFactor['totalSeats']
+    #TODO: What else needs to be updated?  seats_week?
+    return path
   showPath: (mapPath) ->
     mapPath.show()
   hidePath: (mapPath) ->
