@@ -58,21 +58,22 @@ L.MapPath = L.Path.extend(
       @arrivalAirport.latlng
     ]
     L.MapPaths.addInitializedPath this
-  midPoint: (points, ud) ->
-    latDif = undefined
-    midPoint = undefined
+  midPoint: (points) ->
+    ud = true
     midPoint = []
     latDif = Math.abs(points[0].lat - (points[1].lat))
+    lngDif = Math.abs(points[0].lng - (points[1].lng))
+    ud = if latDif > lngDif then false else true
     if points[0].lat > points[1].lat
       if ud
-        midPoint[0] = points[1].lat + latDif / 4
+        midPoint[0] = points[1].lat + (latDif / 4)
       else
         midPoint[0] = points[0].lat - (latDif / 4)
     else
       if ud
-        midPoint[0] = points[1].lat + latDif / 4
-      else
         midPoint[0] = points[1].lat - (latDif / 4)
+      else
+        midPoint[0] = points[0].lat + (latDif / 4)
     midPoint[1] = (points[0].lng + points[1].lng) / 2
     midPoint
   calculateArch: ->
@@ -86,7 +87,7 @@ L.MapPath = L.Path.extend(
       @midPoint([
         @departureAirport.latlng
         @arrivalAirport.latlng
-      ], true)
+      ])
       [
         @arrivalAirport.latlng.lat
         @arrivalAirport.latlng.lng
