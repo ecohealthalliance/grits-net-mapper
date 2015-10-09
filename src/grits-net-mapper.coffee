@@ -58,6 +58,12 @@ L.MapPath = L.Path.extend(
       @arrivalAirport.latlng
     ]
     L.MapPaths.addInitializedPath this
+  # @note turf.bezier requires atleast 3 points to create a curve.  With two
+  #        points only a line will be drawn.  midPoint finds a point between
+  #        two points accounting for reverse paths (a->b and b->a) to draw the
+  #        curve through.  The curve will be the opposite for reverse paths.
+  #        ie a->b's curve will curve the oppisite direction as b->a's curve.
+  # @param [Array<L.LatLng>] end points to derive the midpoint from
   midPoint: (points) ->
     ud = true
     midPoint = []
@@ -76,6 +82,7 @@ L.MapPath = L.Path.extend(
         midPoint[0] = points[0].lat + (latDif / 4)
     midPoint[1] = (points[0].lng + points[1].lng) / 2
     midPoint
+  # @note Calculate the arch between departure and arrival airports
   calculateArch: ->
     curved = undefined
     line = undefined
@@ -96,14 +103,20 @@ L.MapPath = L.Path.extend(
     curved = turf.bezier(line, 10000, 1)
     @pointList = curved.geometry.coordinates
     @pointList.push @arrivalAirport.latlng
+  # @note redraw the path
   refresh: ->
     @hide()
     @drawPath()
     @show()
+  # @note Set the color and weight of the path
+  #
+  # @param [String] color - color of the path
+  # @param [Float] weight - weight of the path (pixels)
   setStyle: (color, weight) ->
     @color = color
     @weight = weight
     @refresh()
+  # @note initializes the MapPath's pathline (arch and chevrons)
   drawPath: ->
     archPos = undefined
     i = undefined
@@ -150,6 +163,9 @@ L.MapPaths =
     return false
   getLayerGroup: ->
     L.layerGroup @mapPaths
+  # @note finds and returns the factor by factorId if it exists
+  #
+  # @param [String] id - Id of factor to be retrieved
   getFactorById: (id) ->
     factor = undefined
     i = undefined
@@ -164,6 +180,10 @@ L.MapPaths =
         return factor
       i++
     false
+  # @note finds and returns the MapPath by factor departure and arrival
+  #       airport if it exists
+  #
+  # @param [JSON] factor - flight data
   getMapPathByFactor: (factor) ->
     i = undefined
     len = undefined
@@ -178,8 +198,14 @@ L.MapPaths =
         return tempMapPath
       i++
     false
+  # @note adds a new L.MapPath to L.MapPaths.mapPaths
+  #
+  # @param [L.MapPath] mapPath
   addInitializedPath: (mapPath) ->
     @mapPaths.push mapPath
+  # @note adds a new factor to L.MapPaths.factors
+  #
+  # @param [JSON] factor - flight data
   addFactor: (id, factor, map) ->
     existingFactor = undefined
     path = undefined
@@ -196,6 +222,9 @@ L.MapPaths =
     @factors.push factor
     path.flights++
     path
+  # @note removes a factor by id from L.MapPaths.factors
+  #
+  # @param [String] id - Id of factor to be removed
   removeFactor: (id) ->
     factor = undefined
     path = undefined
@@ -218,6 +247,11 @@ L.MapPaths =
         'path': path
         'factor': factor
       }
+  # @note update an existing factor in L.MapPaths.factors
+  #
+  # @param [String] id - Id of factor to be updated
+  # @param [JSON] newFactor - updated flight data
+  # @param [L.Map] map
   updateFactor: (id, newFactor, map) ->
     oldFactor = @getFactorById(id)
     path = @getMapPathByFactor(oldFactor)
@@ -319,6 +353,11 @@ L.MapNode = L.Path.extend(
   onRemove: (map) ->
     map.removeLayer @marker
     return
+  # @note invoked when new L.mapNode() is called.  Creates a new L.MapNode and
+  #       adds it to L.MapNodes.mapNodes if it doesn't exist.
+  #
+  # @param [JSON] node - new node data
+  # @param [L.Map] map
   initialize: (node, map) ->
     i = undefined
     len = undefined
@@ -355,6 +394,11 @@ L.MapNode = L.Path.extend(
           results.push undefined
         i++
       results
+  # @note invoked when new L.mapNode() is called.  Creates a new L.MapNode and
+  #       adds it to L.MapNodes.mapNodes if it doesn't exist.
+  #
+  # @param [JSON] otherNode - new node data
+  # @param [L.Map] map
   equals: (otherNode) ->
     otherNode.latlng.lat == @latlng.lat and otherNode.latlng.lng == @latlng.lng
   hide: ->
@@ -367,6 +411,9 @@ L.MapNode = L.Path.extend(
 L.MapNodes =
   selectedNode: null
   mapNodes: []
+  # @note finds L.MapNode by markerId
+  #
+  # @param [String] markerId - Id of marker
   getNodeByMarker: (markerId) ->
     for node in @mapNodes
       if node.marker._leaflet_id is markerId
@@ -432,6 +479,9 @@ L.MapNodes =
         results.push undefined
       i++
     results
+  # @note returns if `node` in L.MapNodes.mapNodes
+  #
+  # @param [L.MapNode] node
   contains: (node) ->
     i = undefined
     len = undefined
