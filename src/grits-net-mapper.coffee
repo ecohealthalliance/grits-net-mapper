@@ -139,8 +139,9 @@ L.MapPath = L.Path.extend(
       color: @color
       weight: @weight
       opacity: 0.8
-      smoothFactor: 1).on 'click', (e) ->
-        pathHandler.click L.MapPaths.getPathByPathLine(e.target._leaflet_id)
+      smoothFactor: 1)
+    @pathline.on 'click', (e) ->
+      pathHandler.click L.MapPaths.getPathByPathLine(e.target._leaflet_id)
     @pathLineDecorator = L.polylineDecorator(@pathLine, patterns: [ {
       offset: '50px'
       repeat: '100px'
