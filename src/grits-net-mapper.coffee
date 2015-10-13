@@ -140,7 +140,7 @@ L.MapPath = L.Path.extend(
       weight: @weight
       opacity: 0.8
       smoothFactor: 1)
-    @pathline.on 'click', (e) ->
+    @pathLine.on 'click', (e) ->
       pathHandler.click L.MapPaths.getPathByPathLine(e.target._leaflet_id)
     @pathLineDecorator = L.polylineDecorator(@pathLine, patterns: [ {
       offset: '50px'
@@ -255,6 +255,8 @@ L.MapPaths =
   # @param [L.Map] map
   updateFactor: (id, newFactor, map) ->
     oldFactor = @getFactorById(id)
+    if !oldFactor
+      return false
     path = @getMapPathByFactor(oldFactor)
     path.totalSeats -= oldFactor['totalSeats']
     path.totalSeats += newFactor['totalSeats']
