@@ -157,6 +157,9 @@ L.mapPath = (flight, map) ->
 L.MapPaths =
   mapPaths: []
   factors: []
+  reset: ->
+    @hideAllPaths()
+    @hideAllNodes()
   getPathByPathLine: (pathId) ->
     for path in @mapPaths
       if path.pathLine._leaflet_id is pathId
@@ -240,10 +243,8 @@ L.MapPaths =
     if path.flights is 0
       path.arrivalAirport.hide()
       path.departureAirport.hide()
-      path.hide()
       return false
     else
-      path.show()
       {
         'path': path
         'factor': factor
