@@ -18,6 +18,7 @@ L.MapPath = L.Path.extend(
   stops: null
   flights: 0
   visible: false
+  normalizedPercent: 0
   onAdd: (map) ->
     @show()
     return
@@ -39,21 +40,6 @@ L.MapPath = L.Path.extend(
     if @pathLineDecorator != null
       @map.removeLayer @pathLineDecorator
     return
-  update: (flight) ->
-    if flight.departureAirport != null
-      @departureAirport = new (L.MapNode)(flight.departureAirport, @map)
-    if flight.arrivalAirport != null
-      @arrivalAirport = new (L.MapNode)(flight.arrivalAirport, @map)
-    if flight.Miles != null
-      @miles = flight.Miles
-    if flight['Orig WAC']
-      @origWAC = flight['Orig WAC']
-    if flight.totalSeats != null
-      @totalSeats = flight.totalSeats
-    if flight['Seats/Week'] != null
-      @seats_week = flight['Seats/Week']
-    @setPopup()
-    return
   initialize: (flight, map) ->
     @map = map
     @visible = true
@@ -72,24 +58,31 @@ L.MapPath = L.Path.extend(
       @arrivalAirport.latlng
     ]
     L.MapPaths.addInitializedPath this
-    @drawPath()
-  midPoint: (points, ud) ->
-    latDif = undefined
-    midPoint = undefined
+  # @note turf.bezier requires atleast 3 points to create a curve.  With two
+  #        points only a line will be drawn.  midPoint finds a point between
+  #        two points accounting for reverse paths (a->b and b->a) to draw the
+  #        curve through.  The curve will be the opposite for reverse paths.
+  #        ie a->b's curve will curve the oppisite direction as b->a's curve.
+  # @param [Array<L.LatLng>] end points to derive the midpoint from
+  midPoint: (points) ->
+    ud = true
     midPoint = []
     latDif = Math.abs(points[0].lat - (points[1].lat))
+    lngDif = Math.abs(points[0].lng - (points[1].lng))
+    ud = if latDif > lngDif then false else true
     if points[0].lat > points[1].lat
       if ud
-        midPoint[0] = points[1].lat + latDif / 4
+        midPoint[0] = points[1].lat + (latDif / 4)
       else
         midPoint[0] = points[0].lat - (latDif / 4)
     else
       if ud
-        midPoint[0] = points[1].lat + latDif / 4
-      else
         midPoint[0] = points[1].lat - (latDif / 4)
+      else
+        midPoint[0] = points[0].lat + (latDif / 4)
     midPoint[1] = (points[0].lng + points[1].lng) / 2
     midPoint
+  # @note Calculate the arch between departure and arrival airports
   calculateArch: ->
     curved = undefined
     line = undefined
@@ -101,7 +94,7 @@ L.MapPath = L.Path.extend(
       @midPoint([
         @departureAirport.latlng
         @arrivalAirport.latlng
-      ], true)
+      ])
       [
         @arrivalAirport.latlng.lat
         @arrivalAirport.latlng.lng
@@ -110,22 +103,20 @@ L.MapPath = L.Path.extend(
     curved = turf.bezier(line, 10000, 1)
     @pointList = curved.geometry.coordinates
     @pointList.push @arrivalAirport.latlng
+  # @note redraw the path
   refresh: ->
-    @setPopup()
     @hide()
     @drawPath()
     @show()
-  setPopup: ->
-    div = undefined
-    popup = undefined
-    popup = new (L.popup)
-    div = L.DomUtil.create('div', '')
-    Blaze.renderWithData Template.pathDetails, this, div
-    popup.setContent div
-    @pathLine.bindPopup popup
+  # @note Set the color and weight of the path
+  #
+  # @param [String] color - color of the path
+  # @param [Float] weight - weight of the path (pixels)
   setStyle: (color, weight) ->
     @color = color
     @weight = weight
+    @refresh()
+  # @note initializes the MapPath's pathline (arch and chevrons)
   drawPath: ->
     archPos = undefined
     i = undefined
@@ -149,14 +140,15 @@ L.MapPath = L.Path.extend(
       weight: @weight
       opacity: 0.8
       smoothFactor: 1)
+    @pathLine.on 'click', (e) ->
+      pathHandler.click L.MapPaths.getPathByPathLine(e.target._leaflet_id)
     @pathLineDecorator = L.polylineDecorator(@pathLine, patterns: [ {
       offset: '50px'
       repeat: '100px'
       symbol: new (L.Symbol.ArrowHead)(
-        pixelSize: 20
+        pixelSize: 5 * @weight
         pathOptions: color: @color)
     } ])
-    @setPopup()
 )
 
 L.mapPath = (flight, map) ->
@@ -165,8 +157,16 @@ L.mapPath = (flight, map) ->
 L.MapPaths =
   mapPaths: []
   factors: []
+  getPathByPathLine: (pathId) ->
+    for path in @mapPaths
+      if path.pathLine._leaflet_id is pathId
+        return path
+    return false
   getLayerGroup: ->
     L.layerGroup @mapPaths
+  # @note finds and returns the factor by factorId if it exists
+  #
+  # @param [String] id - Id of factor to be retrieved
   getFactorById: (id) ->
     factor = undefined
     i = undefined
@@ -181,6 +181,10 @@ L.MapPaths =
         return factor
       i++
     false
+  # @note finds and returns the MapPath by factor departure and arrival
+  #       airport if it exists
+  #
+  # @param [JSON] factor - flight data
   getMapPathByFactor: (factor) ->
     i = undefined
     len = undefined
@@ -195,8 +199,14 @@ L.MapPaths =
         return tempMapPath
       i++
     false
+  # @note adds a new L.MapPath to L.MapPaths.mapPaths
+  #
+  # @param [L.MapPath] mapPath
   addInitializedPath: (mapPath) ->
     @mapPaths.push mapPath
+  # @note adds a new factor to L.MapPaths.factors
+  #
+  # @param [JSON] factor - flight data
   addFactor: (id, factor, map) ->
     existingFactor = undefined
     path = undefined
@@ -212,21 +222,14 @@ L.MapPaths =
       path.totalSeats = factor['totalSeats']
     @factors.push factor
     path.flights++
-    path.refresh()
     path
+  # @note removes a factor by id from L.MapPaths.factors
+  #
+  # @param [String] id - Id of factor to be removed
   removeFactor: (id) ->
-    d1 = undefined
-    d2 = undefined
     factor = undefined
-    i = undefined
-    len = undefined
-    o1 = undefined
-    o2 = undefined
     path = undefined
     ref = undefined
-    removeDest = undefined
-    removeOrig = undefined
-    tempMapPath = undefined
     factor = @getFactorById(id)
     if factor == false
       return false
@@ -245,26 +248,20 @@ L.MapPaths =
         'path': path
         'factor': factor
       }
-  updatePath: (id, mapPath, map) ->
-    i = undefined
-    len = undefined
-    ref = undefined
-    results = undefined
-    tempMapPath = undefined
-    ref = @mapPaths
-    results = []
-    i = 0
-    len = ref.length
-    while i < len
-      tempMapPath = ref[i]
-      if tempMapPath.id == id
-        tempMapPath.hide()
-        tempMapPath.update mapPath
-        results.push tempMapPath.show()
-      else
-        results.push undefined
-      i++
-    results
+  # @note update an existing factor in L.MapPaths.factors
+  #
+  # @param [String] id - Id of factor to be updated
+  # @param [JSON] newFactor - updated flight data
+  # @param [L.Map] map
+  updateFactor: (id, newFactor, map) ->
+    oldFactor = @getFactorById(id)
+    if !oldFactor
+      return false
+    path = @getMapPathByFactor(oldFactor)
+    path.totalSeats -= oldFactor['totalSeats']
+    path.totalSeats += newFactor['totalSeats']
+    #TODO: What else needs to be updated?  seats_week?
+    return path
   showPath: (mapPath) ->
     mapPath.show()
   hidePath: (mapPath) ->
@@ -359,14 +356,11 @@ L.MapNode = L.Path.extend(
   onRemove: (map) ->
     map.removeLayer @marker
     return
-  setPopup: ->
-    div = undefined
-    popup = undefined
-    popup = new (L.popup)
-    div = L.DomUtil.create('div', '')
-    Blaze.renderWithData Template.nodeDetails, this, div
-    popup.setContent div
-    @marker.bindPopup popup
+  # @note invoked when new L.mapNode() is called.  Creates a new L.MapNode and
+  #       adds it to L.MapNodes.mapNodes if it doesn't exist.
+  #
+  # @param [JSON] node - new node data
+  # @param [L.Map] map
   initialize: (node, map) ->
     i = undefined
     len = undefined
@@ -388,9 +382,8 @@ L.MapNode = L.Path.extend(
     if !L.MapNodes.contains(this)
       @marker = L.marker(@latlng)
       @marker.on 'click', (e) ->
-        Template.map.nodeEvent L.MapNodes.getNodeByMarker(e.target._leaflet_id)
+        nodeHandler.click L.MapNodes.getNodeByMarker(e.target._leaflet_id)
       L.MapNodes.addInitializedNode this
-      @setPopup()
     else
       ref = L.MapNodes.mapNodes
       results = []
@@ -404,6 +397,11 @@ L.MapNode = L.Path.extend(
           results.push undefined
         i++
       results
+  # @note invoked when new L.mapNode() is called.  Creates a new L.MapNode and
+  #       adds it to L.MapNodes.mapNodes if it doesn't exist.
+  #
+  # @param [JSON] otherNode - new node data
+  # @param [L.Map] map
   equals: (otherNode) ->
     otherNode.latlng.lat == @latlng.lat and otherNode.latlng.lng == @latlng.lng
   hide: ->
@@ -412,11 +410,13 @@ L.MapNode = L.Path.extend(
   show: ->
     @visible = true
     @marker = L.marker(@latlng)
-    @setPopup()
 )
 L.MapNodes =
   selectedNode: null
   mapNodes: []
+  # @note finds L.MapNode by markerId
+  #
+  # @param [String] markerId - Id of marker
   getNodeByMarker: (markerId) ->
     for node in @mapNodes
       if node.marker._leaflet_id is markerId
@@ -482,6 +482,9 @@ L.MapNodes =
         results.push undefined
       i++
     results
+  # @note returns if `node` in L.MapNodes.mapNodes
+  #
+  # @param [L.MapNode] node
   contains: (node) ->
     i = undefined
     len = undefined
