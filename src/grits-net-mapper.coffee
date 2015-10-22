@@ -28,10 +28,10 @@ L.MapPath = L.Path.extend(
       @pathLine.addTo @map
     if @pathLineDecorator != null
       @pathLineDecorator.addTo @map
-    if @departureAirport != null and @departureAirport.visible == false
-      @departureAirport.marker.addTo @map
-    if @arrivalAirport != null and @arrivalAirport.visible == false
-      @arrivalAirport.marker.addTo @map
+    if @departureAirport != null and !@departureAirport.visible
+      @departureAirport.show()
+    if @arrivalAirport != null and !@arrivalAirport.visible
+      @arrivalAirport.show()
     return
   hide: ->
     @visible = false
@@ -123,7 +123,6 @@ L.MapPath = L.Path.extend(
     len = undefined
     mapPath = undefined
     ref = undefined
-    @visible = true
     archPos = []
     ref = L.MapPaths.mapPaths
     i = 0
@@ -238,9 +237,8 @@ L.MapPaths =
     path.totalSeats -= factor['totalSeats']
     path.flights--
     if path.flights is 0
-      path.arrivalAirport.hide()
-      path.departureAirport.hide()
       path.hide()
+      #L.MapNodes.checkAndHideNodes(path)
       return false
     else
       path.show()
@@ -334,7 +332,8 @@ L.MapPaths =
       i++
     results
 L.MapNode = L.Path.extend(
-  visible: false
+  isOrigin: false
+  visible: true
   latlng: null
   city: null
   state: null
@@ -409,7 +408,7 @@ L.MapNode = L.Path.extend(
     @map.removeLayer @marker
   show: ->
     @visible = true
-    @marker = L.marker(@latlng)
+    @marker.addTo @map
 )
 L.MapNodes =
   selectedNode: null
@@ -422,6 +421,23 @@ L.MapNodes =
       if node.marker._leaflet_id is markerId
         return node
     return false
+  checkAndHideNodes: (path) ->
+    hideArrival = true
+    hideDeparture = true
+    for loopPath in L.MapPaths.mapPaths
+      if loopPath.visible
+        if loopPath.arrivalAirport.id is path.arrivalAirport.id
+          hideArrival = false
+        if loopPath.arrivalAirport.id is path.departureAirport.id
+          hideDeparture = false
+        if loopPath.departureAirport.id is path.arrivalAirport.id
+          hideArrival = false
+        if loopPath.departureAirport.id is path.departureAirport.id
+          hideDeparture = false
+    if hideArrival
+      path.arrivalAirport.hide()
+    if hideDeparture
+      path.departureAirport.hide()
   getLayerGroup: ->
     L.layerGroup @mapNodes
   addInitializedNode: (node) ->
@@ -507,6 +523,20 @@ L.MapNodes =
     node.hide()
   showNode: (node) ->
     node.show()
+  showCurrentPathNodes: ->
+    for path in L.MapPaths.mapPaths
+      if path.visible
+        path.arrivalAirport.show()
+        path.departureAirport.show()
+  getCurrentPathNodes: ->
+    nodes = []
+    for path in L.MapPaths.mapPaths
+      if path.visible
+        nodes.push path.arrivalAirport.id
+        nodes.push path.departureAirport.id
+      else
+        x = 0
+    return nodes
   hideAllNodes: ->
     i = undefined
     len = undefined
