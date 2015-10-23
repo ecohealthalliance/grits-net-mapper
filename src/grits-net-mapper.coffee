@@ -523,6 +523,30 @@ L.MapNodes =
     node.hide()
   showNode: (node) ->
     node.show()
+  setCurrentOrigin: (node) ->
+    if node is false
+      return false
+    curOrig = @getCurrentOrigin()
+    if curOrig isnt false
+      curOrig.isOrigin = false
+      curOrig.marker.setIcon(new L.Icon.Default())
+      curOrig.marker.zIndexOffset = 0
+    node.isOrigin = true
+    redMarker = L.icon({
+      iconUrl: "/packages/grits_grits-net-mapper/images/red-marker.png",
+      iconSize:     [60, 50],
+      shadowSize:   [50, 64],
+      iconAnchor:   [15, 46],
+      shadowAnchor: [4, 62],
+      popupAnchor:  [-3, -76]
+    })
+    node.marker.setIcon redMarker
+    node.marker.zIndexOffset = 9999
+  getCurrentOrigin: ->
+    for node in L.MapNodes.mapNodes
+      if node.isOrigin
+        return node
+    return false
   showCurrentPathNodes: ->
     for path in L.MapPaths.mapPaths
       if path.visible

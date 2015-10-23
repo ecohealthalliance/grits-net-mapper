@@ -8,4 +8,5 @@ Package.describe({
 Package.onUse(function configureApi(api) {
   api.versionsFrom('1.1.0.3');
   api.addFiles('./lib/grits-net-mapper.js', 'client');
+  api.addFiles('./images/red-marker.png');
 });
