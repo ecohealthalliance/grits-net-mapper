@@ -19,6 +19,7 @@ L.MapPath = L.Path.extend(
   flights: 0
   visible: false
   normalizedPercent: 0
+  level: 0
   onAdd: (map) ->
     @show()
     return
@@ -40,14 +41,15 @@ L.MapPath = L.Path.extend(
     if @pathLineDecorator != null
       @map.removeLayer @pathLineDecorator
     return
-  initialize: (flight, map) ->
+  initialize: (flight, map, level) ->
+    @level = level
     @map = map
     @visible = true
     @id = flight['_id']
     if flight.departureAirport != null
-      @departureAirport = new (L.MapNode)(flight.departureAirport, @map)
+      @departureAirport = new (L.MapNode)(flight.departureAirport, @map, level)
     if flight.arrivalAirport != null
-      @arrivalAirport = new (L.MapNode)(flight.arrivalAirport, @map)
+      @arrivalAirport = new (L.MapNode)(flight.arrivalAirport, @map, level)
     @miles = flight.Miles
     @origWAC = flight['Orig WAC']
     @totalSeats = flight.totalSeats
@@ -150,12 +152,17 @@ L.MapPath = L.Path.extend(
     } ])
 )
 
-L.mapPath = (flight, map) ->
-  new (L.MapPath)(flight, map)
+L.mapPath = (flight, map, level) ->
+  new (L.MapPath)(flight, map, level)
 
 L.MapPaths =
   mapPaths: []
   factors: []
+  resetLevels: () ->
+    for path in @mapPaths
+      path.level = 0
+      path.arrivalAirport.level = 0
+      path.departureAirport.level = 0
   getPathByPathLine: (pathId) ->
     for path in @mapPaths
       if path.pathLine._leaflet_id is pathId
@@ -206,7 +213,7 @@ L.MapPaths =
   # @note adds a new factor to L.MapPaths.factors
   #
   # @param [JSON] factor - flight data
-  addFactor: (id, factor, map) ->
+  addFactor: (id, factor, map, level) ->
     existingFactor = undefined
     path = undefined
     existingFactor = @getFactorById(id)
@@ -215,9 +222,10 @@ L.MapPaths =
     factor._id = id
     path = @getMapPathByFactor(factor)
     if path != false
+      path.level = level
       path.totalSeats += factor['totalSeats']
     else if path == false
-      path = new (L.MapPath)(factor, map)
+      path = new (L.MapPath)(factor, map, level)
       path.totalSeats = factor['totalSeats']
     @factors.push factor
     path.flights++
@@ -251,11 +259,12 @@ L.MapPaths =
   # @param [String] id - Id of factor to be updated
   # @param [JSON] newFactor - updated flight data
   # @param [L.Map] map
-  updateFactor: (id, newFactor, map) ->
+  updateFactor: (id, newFactor, map, level) ->
     oldFactor = @getFactorById(id)
     if !oldFactor
       return false
     path = @getMapPathByFactor(oldFactor)
+    path.level = level
     path.totalSeats -= oldFactor['totalSeats']
     path.totalSeats += newFactor['totalSeats']
     #TODO: What else needs to be updated?  seats_week?
@@ -348,6 +357,7 @@ L.MapNode = L.Path.extend(
   key: null
   map: null
   marker: null
+  level: 0
   onAdd: (map) ->
     if @marker != null
       @marker.addTo map
@@ -360,7 +370,8 @@ L.MapNode = L.Path.extend(
   #
   # @param [JSON] node - new node data
   # @param [L.Map] map
-  initialize: (node, map) ->
+  initialize: (node, map, level) ->
+    @level = 0
     i = undefined
     len = undefined
     ref = undefined
@@ -444,7 +455,7 @@ L.MapNodes =
     @mapNodes.push node
   nodeClickEvent: (node) ->
     alert node.id
-  addNode: (mapNode) ->
+  addNode: (mapNode, level) ->
     exists = undefined
     i = undefined
     len = undefined
@@ -460,7 +471,7 @@ L.MapNodes =
         exists = true
       i++
     if !exists
-      return new (L.MapNode)(mapNode, @map)
+      return new (L.MapNode)(mapNode, @map, level)
     return
   removeNode: (id) ->
     i = undefined
@@ -592,5 +603,5 @@ L.MapNodes =
       i++
     results
 
-L.mapNode = (node, map) ->
-  new (L.MapNode)(node, map)
+L.mapNode = (node, map, level) ->
+  new (L.MapNode)(node, map, level)
