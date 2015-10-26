@@ -217,11 +217,11 @@ L.MapPaths =
     if path != false
       path.totalSeats += factor['totalSeats']
     else if path == false
-      path = new (L.MapPath)(factor, map).addTo(map)
+      path = new (L.MapPath)(factor, map)
       path.totalSeats = factor['totalSeats']
     @factors.push factor
     path.flights++
-    path
+    return path
   # @note removes a factor by id from L.MapPaths.factors
   #
   # @param [String] id - Id of factor to be removed
