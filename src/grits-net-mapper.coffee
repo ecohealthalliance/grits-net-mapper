@@ -342,7 +342,7 @@ L.MapPaths =
     results
 L.MapNode = L.Path.extend(
   isOrigin: false
-  visible: true
+  visible: false
   latlng: null
   city: null
   state: null
