@@ -21,7 +21,13 @@ L.MapPath = L.Path.extend(
   normalizedPercent: 0
   level: 0
   onAdd: (map) ->
-    @show()
+    if @pathLine isnt null
+      @pathLine.addTo @map
+      @pathLineDecorator.addTo @map
+    return
+  onRemove: (map) ->
+    @map.removeLayer @pathLine
+    @map.removeLayer @pathLineDecorator
     return
   show: ->
     @visible = true
