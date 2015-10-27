@@ -19,8 +19,15 @@ L.MapPath = L.Path.extend(
   flights: 0
   visible: false
   normalizedPercent: 0
+  level: 0
   onAdd: (map) ->
-    @show()
+    if @pathLine isnt null
+      @pathLine.addTo @map
+      @pathLineDecorator.addTo @map
+    return
+  onRemove: (map) ->
+    @map.removeLayer @pathLine
+    @map.removeLayer @pathLineDecorator
     return
   show: ->
     @visible = true
@@ -28,10 +35,10 @@ L.MapPath = L.Path.extend(
       @pathLine.addTo @map
     if @pathLineDecorator != null
       @pathLineDecorator.addTo @map
-    if @departureAirport != null and @departureAirport.visible == false
-      @departureAirport.marker.addTo @map
-    if @arrivalAirport != null and @arrivalAirport.visible == false
-      @arrivalAirport.marker.addTo @map
+    if @departureAirport != null and !@departureAirport.visible
+      @departureAirport.show()
+    if @arrivalAirport != null and !@arrivalAirport.visible
+      @arrivalAirport.show()
     return
   hide: ->
     @visible = false
@@ -40,14 +47,15 @@ L.MapPath = L.Path.extend(
     if @pathLineDecorator != null
       @map.removeLayer @pathLineDecorator
     return
-  initialize: (flight, map) ->
+  initialize: (flight, map, level) ->
+    @level = level
     @map = map
     @visible = true
     @id = flight['_id']
     if flight.departureAirport != null
-      @departureAirport = new (L.MapNode)(flight.departureAirport, @map)
+      @departureAirport = new (L.MapNode)(flight.departureAirport, @map, level)
     if flight.arrivalAirport != null
-      @arrivalAirport = new (L.MapNode)(flight.arrivalAirport, @map)
+      @arrivalAirport = new (L.MapNode)(flight.arrivalAirport, @map, level)
     @miles = flight.Miles
     @origWAC = flight['Orig WAC']
     @totalSeats = flight.totalSeats
@@ -123,7 +131,6 @@ L.MapPath = L.Path.extend(
     len = undefined
     mapPath = undefined
     ref = undefined
-    @visible = true
     archPos = []
     ref = L.MapPaths.mapPaths
     i = 0
@@ -151,12 +158,17 @@ L.MapPath = L.Path.extend(
     } ])
 )
 
-L.mapPath = (flight, map) ->
-  new (L.MapPath)(flight, map)
+L.mapPath = (flight, map, level) ->
+  new (L.MapPath)(flight, map, level)
 
 L.MapPaths =
   mapPaths: []
   factors: []
+  resetLevels: () ->
+    for path in @mapPaths
+      path.level = 0
+      path.arrivalAirport.level = 0
+      path.departureAirport.level = 0
   getPathByPathLine: (pathId) ->
     for path in @mapPaths
       if path.pathLine._leaflet_id is pathId
@@ -207,7 +219,7 @@ L.MapPaths =
   # @note adds a new factor to L.MapPaths.factors
   #
   # @param [JSON] factor - flight data
-  addFactor: (id, factor, map) ->
+  addFactor: (id, factor, map, level) ->
     existingFactor = undefined
     path = undefined
     existingFactor = @getFactorById(id)
@@ -216,13 +228,14 @@ L.MapPaths =
     factor._id = id
     path = @getMapPathByFactor(factor)
     if path != false
+      path.level = level
       path.totalSeats += factor['totalSeats']
     else if path == false
-      path = new (L.MapPath)(factor, map).addTo(map)
+      path = new (L.MapPath)(factor, map, level)
       path.totalSeats = factor['totalSeats']
     @factors.push factor
     path.flights++
-    path
+    return path
   # @note removes a factor by id from L.MapPaths.factors
   #
   # @param [String] id - Id of factor to be removed
@@ -238,9 +251,8 @@ L.MapPaths =
     path.totalSeats -= factor['totalSeats']
     path.flights--
     if path.flights is 0
-      path.arrivalAirport.hide()
-      path.departureAirport.hide()
       path.hide()
+      #L.MapNodes.checkAndHideNodes(path)
       return false
     else
       path.show()
@@ -253,11 +265,12 @@ L.MapPaths =
   # @param [String] id - Id of factor to be updated
   # @param [JSON] newFactor - updated flight data
   # @param [L.Map] map
-  updateFactor: (id, newFactor, map) ->
+  updateFactor: (id, newFactor, map, level) ->
     oldFactor = @getFactorById(id)
     if !oldFactor
       return false
     path = @getMapPathByFactor(oldFactor)
+    path.level = level
     path.totalSeats -= oldFactor['totalSeats']
     path.totalSeats += newFactor['totalSeats']
     #TODO: What else needs to be updated?  seats_week?
@@ -334,6 +347,7 @@ L.MapPaths =
       i++
     results
 L.MapNode = L.Path.extend(
+  isOrigin: false
   visible: false
   latlng: null
   city: null
@@ -349,6 +363,7 @@ L.MapNode = L.Path.extend(
   key: null
   map: null
   marker: null
+  level: 0
   onAdd: (map) ->
     if @marker != null
       @marker.addTo map
@@ -361,7 +376,8 @@ L.MapNode = L.Path.extend(
   #
   # @param [JSON] node - new node data
   # @param [L.Map] map
-  initialize: (node, map) ->
+  initialize: (node, map, level) ->
+    @level = 0
     i = undefined
     len = undefined
     ref = undefined
@@ -409,7 +425,7 @@ L.MapNode = L.Path.extend(
     @map.removeLayer @marker
   show: ->
     @visible = true
-    @marker = L.marker(@latlng)
+    @marker.addTo @map
 )
 L.MapNodes =
   selectedNode: null
@@ -422,13 +438,30 @@ L.MapNodes =
       if node.marker._leaflet_id is markerId
         return node
     return false
+  checkAndHideNodes: (path) ->
+    hideArrival = true
+    hideDeparture = true
+    for loopPath in L.MapPaths.mapPaths
+      if loopPath.visible
+        if loopPath.arrivalAirport.id is path.arrivalAirport.id
+          hideArrival = false
+        if loopPath.arrivalAirport.id is path.departureAirport.id
+          hideDeparture = false
+        if loopPath.departureAirport.id is path.arrivalAirport.id
+          hideArrival = false
+        if loopPath.departureAirport.id is path.departureAirport.id
+          hideDeparture = false
+    if hideArrival
+      path.arrivalAirport.hide()
+    if hideDeparture
+      path.departureAirport.hide()
   getLayerGroup: ->
     L.layerGroup @mapNodes
   addInitializedNode: (node) ->
     @mapNodes.push node
   nodeClickEvent: (node) ->
     alert node.id
-  addNode: (mapNode) ->
+  addNode: (mapNode, level) ->
     exists = undefined
     i = undefined
     len = undefined
@@ -444,7 +477,7 @@ L.MapNodes =
         exists = true
       i++
     if !exists
-      return new (L.MapNode)(mapNode, @map)
+      return new (L.MapNode)(mapNode, @map, level)
     return
   removeNode: (id) ->
     i = undefined
@@ -507,6 +540,44 @@ L.MapNodes =
     node.hide()
   showNode: (node) ->
     node.show()
+  setCurrentOrigin: (node) ->
+    if node is false
+      return false
+    curOrig = @getCurrentOrigin()
+    if curOrig isnt false
+      curOrig.isOrigin = false
+      curOrig.marker.setIcon(new L.Icon.Default())
+      curOrig.marker.zIndexOffset = 0
+    node.isOrigin = true
+    redMarker = L.icon({
+      iconUrl: "/packages/grits_grits-net-mapper/images/red-marker.png",
+      iconSize:     [60, 50],
+      shadowSize:   [50, 64],
+      iconAnchor:   [15, 46],
+      shadowAnchor: [4, 62],
+      popupAnchor:  [-3, -76]
+    })
+    node.marker.setIcon redMarker
+    node.marker.zIndexOffset = 9999
+  getCurrentOrigin: ->
+    for node in L.MapNodes.mapNodes
+      if node.isOrigin
+        return node
+    return false
+  showCurrentPathNodes: ->
+    for path in L.MapPaths.mapPaths
+      if path.visible
+        path.arrivalAirport.show()
+        path.departureAirport.show()
+  getCurrentPathNodes: ->
+    nodes = []
+    for path in L.MapPaths.mapPaths
+      if path.visible
+        nodes.push path.arrivalAirport.id
+        nodes.push path.departureAirport.id
+      else
+        x = 0
+    return nodes
   hideAllNodes: ->
     i = undefined
     len = undefined
@@ -538,5 +609,5 @@ L.MapNodes =
       i++
     results
 
-L.mapNode = (node, map) ->
-  new (L.MapNode)(node, map)
+L.mapNode = (node, map, level) ->
+  new (L.MapNode)(node, map, level)
