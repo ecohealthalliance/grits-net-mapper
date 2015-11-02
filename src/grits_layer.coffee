@@ -1,6 +1,6 @@
 # GritsLayer
 #
-# Creates an instance of a node 'svg' layer.
+# Creates an instance of a layer
 GritsLayer = (map, options, drawCallback) ->
   @_name = 'GritsLayer'
   @data = {}
@@ -20,13 +20,6 @@ GritsLayer = (map, options, drawCallback) ->
     @options = {}
   else
     @options = options
-
-  if !@options.hasOwnProperty 'UPDATE_COUNT'
-    #allow the UI to update every 100 iterations
-    @options.UPDATE_COUNT = 100
-
-  if !@options.hasOwnProperty 'WORKERS'
-    @options.WORKERS = 2
 
   @minValue = null
   @maxValue = null
@@ -76,13 +69,12 @@ GritsLayer::addLayer = () ->
 # Note: makes used of _.bind within the constructor so 'this' is encapsulated
 # properly
 GritsLayer::_drawCallback = (selection, projection) ->
-  self = this
   drawings = _.values(@data)
   drawingsCount = drawings.length
   if drawingsCount <= 0
     return
   if typeof self.drawCallback == 'function'
-    self.drawCallback(drawings, selection, projection)
+    @drawCallback(drawings, selection, projection)
   return
 
 GritsLayer::getRelativeThroughput = (drawing) ->
