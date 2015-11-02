@@ -1,31 +1,26 @@
 # GritsMarker
 #
-# Creates an instance of a marker.
-#  obj that contains:
-#    _id: a unique identifier
-#   loc: a geoJSON object of type 'Point'
-#  handlers:
-#    onClickHandler: function
-#
+# Creates an instance of a marker
 GritsMarker = (width, height, href, colorScale) ->
-  self = this
+  @_name = 'GritsMarker'
+  
   if typeof width == 'undefined'
-    self.height = 80
+    @height = 80
   else
-    self.height = height
+    @height = height
 
   if typeof height == 'undefined'
-    self.width = 55
+    @width = 55
   else
-    self.width = width
+    @width = width
 
   if typeof href == 'undefined'
-    self.href = '/packages/grits_grits-net-mapper/images/marker-icon.svg'
+    @href = '/packages/grits_grits-net-mapper/images/marker-icon.svg'
   else
-    self.href = href
+    @href = href
 
   if typeof colorScale == 'undefined'
-    self.colorScale =
+    @colorScale =
       9: '282828'
       8: '383838'
       7: '484848'
@@ -37,7 +32,6 @@ GritsMarker = (width, height, href, colorScale) ->
       1: 'A8A8A8'
       0: 'B8B8B8'
   else
-    self.colorScale = colorScale
+    @colorScale = colorScale
 
-  @_name = 'Marker'
   return
