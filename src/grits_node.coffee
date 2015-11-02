@@ -1,14 +1,7 @@
 # GritsNode
 #
-# Creates an instance of a node.
-#  obj that contains:
-#    _id: a unique identifier
-#   loc: a geoJSON object of type 'Point'
-#  handlers:
-#    onClickHandler: function
-#
+# Creates an instance of a node
 GritsNode = (obj, marker) ->
-  self = this
   if typeof obj == 'undefined' or obj == null
     throw new Error('A node requires valid input object')
     return
@@ -25,7 +18,7 @@ GritsNode = (obj, marker) ->
   latitude = obj.loc.coordinates[1]
 
   @_id = obj._id
-  @_name = 'Node'
+  @_name = 'GritsNode'
 
   if typeof marker != 'undefined' and marker instanceof GritsMarker
     self.marker = marker
