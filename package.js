@@ -1,6 +1,6 @@
 Package.describe({
   name: 'grits:grits-net-mapper',
-  version: '0.2.3',
+  version: '0.2.2',
   summary: '',
   git: 'https://github.com/ecohealthalliance/grits-net-mapper',
   documentation: 'README.md',
