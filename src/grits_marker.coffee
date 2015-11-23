@@ -1,23 +1,18 @@
 # GritsMarker
 #
 # Creates an instance of a marker
-GritsMarker = (width, height, href, colorScale) ->
+GritsMarker = (width, height, colorScale) ->
   @_name = 'GritsMarker'
   
   if typeof width == 'undefined'
-    @height = 80
+    @height = 25
   else
     @height = height
 
   if typeof height == 'undefined'
-    @width = 55
+    @width = 15
   else
     @width = width
-
-  if typeof href == 'undefined'
-    @href = '/packages/grits_grits-net-mapper/images/marker-icon.svg'
-  else
-    @href = href
 
   if typeof colorScale == 'undefined'
     @colorScale =
