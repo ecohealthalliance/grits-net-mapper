@@ -27,7 +27,7 @@ GritsMap = (element, view, baseLayers) ->
   for baseLayer in layers
     @_baseLayers[baseLayer.options.layerName] = baseLayer
     
-  @map = null  
+  @_map = null  
   return
 
 GritsMap::init = (css) ->
@@ -35,6 +35,7 @@ GritsMap::init = (css) ->
   
   #set the container height
   css = css or {'height': window.innerHeight}
+  
   $(window).resize ->    
     $('#'+self._element).css css
   $(window).resize()
@@ -43,7 +44,7 @@ GritsMap::init = (css) ->
   baseLayers = Object.keys(self._baseLayers).map((k) -> self._baseLayers[k])
   
   #init the map
-  @map = L.map(self._element,
+  @_map = L.map(self._element,
     zoomControl: false
     noWrap: true
     maxZoom: 18
@@ -51,7 +52,6 @@ GritsMap::init = (css) ->
     layers: [ baseLayers[0] ]).setView(self._view.latlong, self._view.zoom)
   
   self._drawOverlayControls()
-  self._addDefaultControls()
   return
 
 # addLayer
@@ -86,10 +86,10 @@ GritsMap::getMap = () ->
 # the overlay controls.
 GritsMap::_drawOverlayControls = () ->
   if @_overlayControl == null
-    @_overlayControl = L.control.layers(@_baseLayers, @_overlays).addTo @map
+    @_overlayControl = L.control.layers(@_baseLayers, @_overlays).addTo @_map
   else
-    @_overlayControl.removeFrom(@map)
-    @_overlayControl = L.control.layers(@_baseLayers, @_overlays).addTo @map
+    @_overlayControl.removeFrom(@_map)
+    @_overlayControl = L.control.layers(@_baseLayers, @_overlays).addTo @_map
 
 # addOverlayControl
 #
@@ -112,25 +112,15 @@ GritsMap::removeOverlayControl = (layerName) ->
 GritsMap::addControl = (position, selector, content) ->
     control = L.control(position: position)
     control.onAdd = @_onAddHandler(selector, content)
-    control.addTo @map
+    control.addTo @_map
 
 # Adds control overlays to the map
 # -Module Selector
 # -Path details
 # -Node details
 GritsMap::_addDefaultControls = () ->
-  pathDetails = L.control(position: 'bottomright')
-  pathDetails.onAdd = @_onAddHandler('info path-detail', '')
-  pathDetails.addTo @map
-  $('.path-detail').hide()
-  
-  nodeDetails = L.control(position: 'bottomright')
-  nodeDetails.onAdd = @_onAddHandler('info node-detail', '')
-  nodeDetails.addTo @map
-  $('.node-detail').hide()
 
-  $(".path-detail-close").on 'click', ->
-    $('.path-detail').hide()
+  return
 
 # onAddHandler
 #
@@ -150,36 +140,36 @@ GritsMap::_onAddHandler = (selector, html) ->
 # @param [Integet] zoom - the zoom level
 # @param [Object] options - the animation options
 GritsMap::setView = (latLng, zoom, options) ->
-  if _.isNull(@map)
+  if _.isNull(@_map)
     throw new Error('The map has not be initialized.')
-  @map.setView(latLng, zoom, options)
+  @_map.setView(latLng, zoom, options)
   return
 
 # fitBounds
 #
 # wrapper, Sets a map view that contains the given geographical bounds with the maximum zoom level possible.
 GritsMap::fitBounds = (latLngBounds, options) ->
-  if _.isNull(@map)
+  if _.isNull(@_map)
     throw new Error('The map has not be initialized.')
-  @map.fitBounds(latLngBounds, options)
+  @_map.fitBounds(latLngBounds, options)
   return
 
 # setMaxBounds
 #
 # wrapper, Restricts the map view to the given bounds
 GritsMap::setMaxBounds = (latLngBounds) ->
-  if _.isNull(@map)
+  if _.isNull(@_map)
     throw new Error('The map has not be initialized.')
-  @map.setMaxBounds(latLngBounds)
+  @_map.setMaxBounds(latLngBounds)
   return
 
 # getBounds
 #
 # wrapper, Returns the LatLngBounds of the current map view.
 GritsMap::getBounds = (latLngBounds) ->
-  if _.isNull(@map)
+  if _.isNull(@_map)
     throw new Error('The map has not be initialized.')
-  @map.getBounds()
+  @_map.getBounds()
   return
 
 # setZoom
@@ -189,9 +179,9 @@ GritsMap::getBounds = (latLngBounds) ->
 # @param [Integet] zoom - the zoom level
 # @param [Object] options - the animation options
 GritsMap::setZoom = (zoom, options) ->
-  if _.isNull(@map)
+  if _.isNull(@_map)
     throw new Error('The map has not be initialized.')
-  @map.setZoom(zoom, options)
+  @_map.setZoom(zoom, options)
   return
 
 # zoomIn
@@ -199,9 +189,9 @@ GritsMap::setZoom = (zoom, options) ->
 # wrapper, Increases the zoom of the map by delta (1 by default).
 # @param [Integer] delta
 GritsMap::zoomIn = (delta) ->
-  if _.isNull(@map)
+  if _.isNull(@_map)
     throw new Error('The map has not be initialized.')
-  @map.zoomIn(delta)
+  @_map.zoomIn(delta)
   return
 
 # zoomOut
@@ -209,34 +199,34 @@ GritsMap::zoomIn = (delta) ->
 # wrapper, Decreases the zoom of the map by delta (1 by default).
 # @param [Integer] delta
 GritsMap::zoomOut = (delta) ->
-  if _.isNull(@map)
+  if _.isNull(@_map)
     throw new Error('The map has not be initialized.')
-  @map.zoomOut(delta)
+  @_map.zoomOut(delta)
   return
 
 # getZoom
 #
 # wrapper, Returns the current zoom of the map view.
 GritsMap::getZoom = () ->
-  if _.isNull(@map)
+  if _.isNull(@_map)
     throw new Error('The map has not be initialized.')
-  @map.getZoom()
+  @_map.getZoom()
   return
 
 # panTo
 #
 # wrapper, Pans the map to a given center. Makes an animated pan if new center is not more than one screen away from the current one.
 GritsMap::panTo = (latLng, options) ->
-  if _.isNull(@map)
+  if _.isNull(@_map)
     throw new Error('The map has not be initialized.')
-  @map.panTo(latLng, options)
+  @_map.panTo(latLng, options)
   return
   
 # remove
 #
 # wrapper, Destroys the map and clears all related event listeners.
 GritsMap::remove = () ->
-  if _.isNull(@map)
+  if _.isNull(@_map)
     throw new Error('The map has not be initialized.')
-  @map.remove()
+  @_map.remove()
   return
