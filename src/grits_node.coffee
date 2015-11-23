@@ -21,9 +21,9 @@ GritsNode = (obj, marker) ->
   @_name = 'GritsNode'
 
   if typeof marker != 'undefined' and marker instanceof GritsMarker
-    self.marker = marker
+    @marker = marker
   else
-    self.marker = new GritsMarker()
+    @marker = new GritsMarker()
 
   @latLng = [latitude, longitude]
 
@@ -31,9 +31,13 @@ GritsNode = (obj, marker) ->
   @outgoingThroughput = 0
   @level = 0
 
-  @metadata = Object.assign(obj)
+  @metadata = {}
+  _.extend(@metadata, obj)
+  
+  @eventHandlers = {}
 
   return
 
-GritsNode::setClickHandler = (fn) ->
-  @clickHandler = fn
+GritsNode::setEventHandlers = (eventHandlers) ->
+  for name, method of eventHandlers
+    @eventHandlers[name] = _.bind(method, this)
