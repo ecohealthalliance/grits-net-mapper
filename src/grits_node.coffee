@@ -1,6 +1,8 @@
-# GritsNode
+# creates an instance of a node
 #
-# Creates an instance of a node
+# @param [Object] obj, an object that represents a node, it must contain a
+#  unique _id and a geoJSON 'loc' property
+# @param [Object] marker, an instance of GritsMarker
 GritsNode = (obj, marker) ->
   if typeof obj == 'undefined' or obj == null
     throw new Error('A node requires valid input object')
@@ -38,6 +40,9 @@ GritsNode = (obj, marker) ->
 
   return
 
+# binds eventHandlers to the node
+#
+# @param [Object] eventHandlers, an object containing event handlers
 GritsNode::setEventHandlers = (eventHandlers) ->
   for name, method of eventHandlers
     @eventHandlers[name] = _.bind(method, this)

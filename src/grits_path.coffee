@@ -1,6 +1,11 @@
-# GritsPath
+# creates an instance of a path
 #
-# Creates an instance of a path
+# @param [Object] obj, an object that represents a path, it must contain a
+#  unique _id property
+# @param [Integer] throughput, the throughput for this path
+# @param [Integer] level, the level for this path
+# @param [Object] origin, a GritsNode instance
+# @param [Object] destination, a GritsNode instance
 GritsPath = (obj, throughput, level, origin, destination) ->
   @_name = 'GritsPath'
 
@@ -51,6 +56,8 @@ GritsPath = (obj, throughput, level, origin, destination) ->
 
   return
 
+# returns the mid point of a path
+# @method getMidPoint
 GritsPath::getMidPoint = () ->
     ud = true
     midPoint = []
@@ -70,6 +77,10 @@ GritsPath::getMidPoint = () ->
     midPoint[1] = (@origin.latLng[1] + @destination.latLng[1]) / 2
     return midPoint
 
+# binds eventHandlers to the node
+#
+# @method setEventHandlers
+# @param [Object] eventHandlers, an object containing event handlers
 GritsPath::setEventHandlers = (eventHandlers) ->
   for name, method of eventHandlers
     @eventHandlers[name] = _.bind(method, this)

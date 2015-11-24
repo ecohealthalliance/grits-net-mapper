@@ -1,6 +1,5 @@
-# GritsLayer
-#
-# Creates an instance of a layer
+# Creates an instance of a GritsLayer.  GritsLayer contains reference to a
+# leaflet layer and leaflet group.
 GritsLayer = () ->
   @_name = 'Layer'
   @_data = {}
@@ -11,16 +10,13 @@ GritsLayer = () ->
   @_normalizedCI = 1
   return
 
-# remove
-#
 # removes the layerGroup from the map
 GritsLayer::_removeLayerGroup = () ->
   if !(typeof @_layerGroup == 'undefined' or @_layerGroup == null)
     @_map.getMap().removeLayer(@_layerGroup)  
   @_layerGroup = null
   return
-# add
-#
+
 # adds the layerGroup to the map
 GritsLayer::_addLayerGroup = () ->  
   @_layerGroup = L.layerGroup([@_layer])
@@ -28,16 +24,12 @@ GritsLayer::_addLayerGroup = () ->
   @_map.getMap().addLayer(@_layerGroup)
   return
 
-# draw
-#
-# Sets the data for the heatmap plugin and updates the heatmap
+# draws the layer
 GritsLayer::draw = () ->
   @_layer.draw()
   return
 
-# clear
-#
-# Clears the Nodes and layers
+# clears the data redraws the layer
 GritsLayer::clear = () ->
   @_data = {}
   @_removeLayerGroup()
