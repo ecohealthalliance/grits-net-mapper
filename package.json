@@ -16,7 +16,8 @@
     "eslint-config-airbnb": "0.0.8",
     "jasmine": "^2.3.2",
     "webpack": "^1.12.2",
-    "which": "^1.1.2"
+    "which": "^1.1.2",
+    "codo": "^2.0.11"
   },
   "repository": {
     "type": "git",
@@ -26,6 +27,6 @@
     "url": "https://github.com/ecohealthalliance/grits-net-mapper/issues"
   },
   "homepage": "https://github.com/ecohealthalliance/grits-net-mapper#readme",
-  "dependencies": {
+  "dependencies": {    
   }
 }

@@ -1,6 +1,9 @@
-# GritsMarker
+# creates an instance of a marker
 #
-# Creates an instance of a marker
+# @param [Integer] width, the width in px of the marker
+# @param [Integer] height, the height in px of the marker
+# @param [Object] colorScale, an object containing keys as integer values from
+#  0 - 9 with HTML color codes associated as the value.
 GritsMarker = (width, height, colorScale) ->
   @_name = 'GritsMarker'
   
