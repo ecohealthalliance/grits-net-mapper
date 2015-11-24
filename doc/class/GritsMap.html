@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset='UTF-8'>
+  <title>grits-net-mapper Documentation</title>
+  <script src='../javascript/application.js'></script>
+  <script src='../javascript/search.js'></script>
+  <link rel='stylesheet' href='../stylesheets/application.css' type='text/css'>
+</head>
+  <body>
+    <div id='base' data-path='../'></div>
+<div id='header'>
+  <div id='menu'>
+    <a href='../extra/README.md.html' title='grits:grits-net-mapper'>
+      grits:grits-net-mapper
+    </a>
+    &raquo;
+    <a href='../alphabetical_index.html' title='Index'>
+      Index
+    </a>
+    &raquo;
+    <span class='title'>GritsMap</span>
+  </div>
+</div>
+    <div id='content'>
+      <h1>
+        Class:
+        GritsMap
+      </h1>
+      <table class='box'>
+        <tr>
+          <td>Defined in:</td>
+          <td>src&#47;grits_map.coffee</td>
+        </tr>
+      </table>
+      <h2>Overview</h2>
+      <div class='docstring'>
+  <p>Creates an instance of a map</p><p>@param [String]</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>view,</span>
+      <span class='type'>
+        (
+          <tt>Object</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>object cointaining latlong point for center of map </span>
+    </li>
+    <li>
+      <span class='name'>baseLayers,</span>
+      <span class='type'>
+        (
+          <tt>Array</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>array containing L.tileLayer objects </span>
+    </li>
+  </ul>
+</div>
+      <h2>Instance Method Summary</h2>
+      <ul class='summary'>
+  <li>
+    <span class='signature'>
+      <a href='#init-dynamic'>
+        #
+(void)
+<b>init</b><span>(css)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      initializes the map 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#addLayer-dynamic'>
+        #
+(void)
+<b>addLayer</b><span>(layer)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      adds a layer reference to the map object 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#getLayer-dynamic'>
+        #
+(void)
+<b>getLayer</b><span>(name)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      gets a layer refreence from the map object <p> in the UI layer controls</p>
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#getMap-dynamic'>
+        #
+(void)
+<b>getMap</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+      returns the underlying Leaflet map 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#_drawOverlayControls-dynamic'>
+        #
+(void)
+<b>_drawOverlayControls</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+      draws the overlay controls within the control box in the upper-right corner of the map.
+
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#addOverlayControl-dynamic'>
+        #
+(void)
+<b>addOverlayControl</b><span>(layerName, layerGroup)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      adds a new overlay control to the map 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#removeOverlayControl-dynamic'>
+        #
+(void)
+<b>removeOverlayControl</b><span>(layerName)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      removes overlay control from the map 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#addControl-dynamic'>
+        #
+(void)
+<b>addControl</b><span>(position, selector, content)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      add a single control to the map. 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#_onAddHandler-dynamic'>
+        #
+(void)
+<b>_onAddHandler</b><span>(selector, html)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      method for initializing dialog boxes created via addControls 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#setView-dynamic'>
+        #
+(void)
+<b>setView</b><span>(latLng, zoom, options)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      sets the view of the map (geographical center and zoom) with the given animation options.
+
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#fitBounds-dynamic'>
+        #
+(void)
+<b>fitBounds</b><span>(latLngBounds, options)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      sets a map view that contains the given geographical bounds with the maximum  zoom level possible.
+
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#setMaxBounds-dynamic'>
+        #
+(void)
+<b>setMaxBounds</b><span>(latLngBounds)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      restricts the map view to the given bounds 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#getBounds-dynamic'>
+        #
+(void)
+<b>getBounds</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+      returns the LatLngBounds of the current map view. 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#setZoom-dynamic'>
+        #
+(void)
+<b>setZoom</b><span>(zoom, options)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      sets the zoom of the map. 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#zoomIn-dynamic'>
+        #
+(void)
+<b>zoomIn</b><span>(delta)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      increases the zoom of the map by delta (1 by default). 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#zoomOut-dynamic'>
+        #
+(void)
+<b>zoomOut</b><span>(delta)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      decreases the zoom of the map by delta (1 by default). 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#getZoom-dynamic'>
+        #
+(void)
+<b>getZoom</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+      returns the current zoom of the map view. 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#panTo-dynamic'>
+        #
+(void)
+<b>panTo</b><span>(latLng, options)</span>
+      </a>
+    </span>
+    <span class='desc'>
+      pans the map to a given center. 
+    </span>
+  </li>
+  <li>
+    <span class='signature'>
+      <a href='#remove-dynamic'>
+        #
+(void)
+<b>remove</b><span>()</span>
+      </a>
+    </span>
+    <span class='desc'>
+      destroys the map and clears all related event listeners. 
+    </span>
+  </li>
+</ul>
+      <h2>Constructor Details</h2>
+      <div class='methods'>
+  <div class='method_details'>
+    <p class='signature' id='constructor-dynamic'>
+      #
+(void)
+<b>constructor</b><span>(element, view, baseLayers)</span>
+      <br>
+    </p>
+    
+  </div>
+</div>
+      <h2>Instance Method Details</h2>
+      <div class='methods'>
+  <div class='method_details'>
+    <p class='signature' id='init-dynamic'>
+      #
+(void)
+<b>init</b><span>(css)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>initializes the map</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>css,</span>
+      <span class='type'>
+        (
+          <tt>Object</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>object cointaining css styles for the resize event </span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='addLayer-dynamic'>
+      #
+(void)
+<b>addLayer</b><span>(layer)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <div class='note'>
+    <strong>Note:</strong>
+    This does not add the layer to the Leaflet map.  Its just a container 
+  </div>
+  <p>adds a layer reference to the map object</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>layer,</span>
+      <span class='type'>
+        (
+          <tt>Object</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>a GritsLayer instance </span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='getLayer-dynamic'>
+      #
+(void)
+<b>getLayer</b><span>(name)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>gets a layer refreence from the map object</p><p> in the UI layer controls</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>name,</span>
+      <span class='type'>
+        (
+          <tt>String</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>a string containing the name of the layer as shown </span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='getMap-dynamic'>
+      #
+(void)
+<b>getMap</b><span>()</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>returns the underlying Leaflet map</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='_drawOverlayControls-dynamic'>
+      #
+(void)
+<b>_drawOverlayControls</b><span>()</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>draws the overlay controls within the control box in the upper-right
+corner of the map.  It uses @_overlayControl to place the reference of
+the overlay controls.</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='addOverlayControl-dynamic'>
+      #
+(void)
+<b>addOverlayControl</b><span>(layerName, layerGroup)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>adds a new overlay control to the map</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>layerName,</span>
+      <span class='type'>
+        (
+          <tt>String</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>string containing the name of the layer </span>
+    </li>
+    <li>
+      <span class='name'>layerGroup,</span>
+      <span class='type'>
+        (
+          <tt>Object</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the layerGroup object to add to the map controls </span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='removeOverlayControl-dynamic'>
+      #
+(void)
+<b>removeOverlayControl</b><span>(layerName)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>removes overlay control from the map</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>layerName,</span>
+      <span class='type'>
+        (
+          <tt>String</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>string containing the name of the layer </span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='addControl-dynamic'>
+      #
+(void)
+<b>addControl</b><span>(position, selector, content)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>add a single control to the map.</p><p> div</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>position,</span>
+      <span class='type'>
+        (
+          <tt>String</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>string containing the position of the layer </span>
+    </li>
+    <li>
+      <span class='name'>selector,</span>
+      <span class='type'>
+        (
+          <tt>String</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>class to add to the control div </span>
+    </li>
+    <li>
+      <span class='name'>content,</span>
+      <span class='type'>
+        (
+          <tt>String</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>string (can be html) containing the content of the </span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='_onAddHandler-dynamic'>
+      #
+(void)
+<b>_onAddHandler</b><span>(selector, html)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>method for initializing dialog boxes created via addControls</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='setView-dynamic'>
+      #
+(void)
+<b>setView</b><span>(latLng, zoom, options)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>sets the view of the map (geographical center and zoom) with the given
+animation options.</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>latLng,</span>
+      <span class='type'>
+        (
+          <tt>Array</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the  </span>
+    </li>
+    <li>
+      <span class='name'>zoom,</span>
+      <span class='type'>
+        (
+          <tt>Integer</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the zoom level </span>
+    </li>
+    <li>
+      <span class='name'>options,</span>
+      <span class='type'>
+        (
+          <tt>Object</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the animation options </span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='fitBounds-dynamic'>
+      #
+(void)
+<b>fitBounds</b><span>(latLngBounds, options)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>sets a map view that contains the given geographical bounds with the maximum
+ zoom level possible.</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>latLngBounts,</span>
+      <span class='type'>
+        (
+          <tt>Array</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>array of point arrays @example [[40.712, -74.227], [40.774, -74.125]] <a href="http://leafletjs.com/reference.html#latlngbounds">http://leafletjs.com/reference.html#latlngbounds</a> </span>
+    </li>
+    <li>
+      <span class='name'>options,</span>
+      <span class='type'>
+        (
+          <tt>Object</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>object containing paddingTopLeft, paddingBottomRight, padding, and maxZoom properties <a href="http://leafletjs.com/reference.html#map-fitboundsoptions">http://leafletjs.com/reference.html#map-fitboundsoptions</a> </span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='setMaxBounds-dynamic'>
+      #
+(void)
+<b>setMaxBounds</b><span>(latLngBounds)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>restricts the map view to the given bounds</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>latLngBounts,</span>
+      <span class='type'>
+        (
+          <tt>Array</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>array of point arrays @example [[40.712, -74.227], [40.774, -74.125]] <a href="http://leafletjs.com/reference.html#latlngbounds">http://leafletjs.com/reference.html#latlngbounds</a> </span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='getBounds-dynamic'>
+      #
+(void)
+<b>getBounds</b><span>()</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>returns the LatLngBounds of the current map view.</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='setZoom-dynamic'>
+      #
+(void)
+<b>setZoom</b><span>(zoom, options)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>sets the zoom of the map.</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>latLng</span>
+      <span class='type'>
+        (
+          <tt>Array</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'><ul> the poing
+</ul>
+</span>
+    </li>
+    <li>
+      <span class='name'>zoom</span>
+      <span class='type'>
+        (
+          <tt>Integet</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'><ul> the zoom level
+</ul>
+</span>
+    </li>
+    <li>
+      <span class='name'>options</span>
+      <span class='type'>
+        (
+          <tt>Object</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'><ul> the animation options
+</ul>
+</span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='zoomIn-dynamic'>
+      #
+(void)
+<b>zoomIn</b><span>(delta)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>increases the zoom of the map by delta (1 by default).</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>delta</span>
+      <span class='type'>
+        (
+          <tt>Integer</tt>
+        )
+      </span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='zoomOut-dynamic'>
+      #
+(void)
+<b>zoomOut</b><span>(delta)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>decreases the zoom of the map by delta (1 by default).</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>delta</span>
+      <span class='type'>
+        (
+          <tt>Integer</tt>
+        )
+      </span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='getZoom-dynamic'>
+      #
+(void)
+<b>getZoom</b><span>()</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>returns the current zoom of the map view.</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='panTo-dynamic'>
+      #
+(void)
+<b>panTo</b><span>(latLng, options)</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>pans the map to a given center. Makes an animated pan if new center is not
+more than one screen away from the current one.</p><p> and noMoveStart properties.</p>
+</div>
+<div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>latLng,</span>
+      <span class='type'>
+        (
+          <tt>Array</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>array containing a point </span>
+    </li>
+    <li>
+      <span class='name'>options,</span>
+      <span class='type'>
+        (
+          <tt>Object</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>object cointaining animate, duration, easeLinerity, </span>
+    </li>
+  </ul>
+</div>
+  </div>
+  <div class='method_details'>
+    <p class='signature' id='remove-dynamic'>
+      #
+(void)
+<b>remove</b><span>()</span>
+      <br>
+    </p>
+    <div class='docstring'>
+  <p>destroys the map and clears all related event listeners.</p>
+</div>
+<div class='tags'>
+</div>
+  </div>
+</div>
+    </div>
+    <div id='footer'>
+  November 24, 15 13:26:19 by
+  <a href='https://github.com/coffeedoc/codo' title='CoffeeScript API documentation generator'>
+    Codo
+  </a>
+  2.0.11
+  &#10034;
+  Press H to see the keyboard shortcuts
+  &#10034;
+  <a href='http://twitter.com/netzpirat' target='_parent'>@netzpirat</a>
+  &#10034;
+  <a href='http://twitter.com/_inossidabile' target='_parent'>@_inossidabile</a>
+</div>
+<iframe id='search_frame'></iframe>
+<div id='fuzzySearch'>
+  <input type='text'>
+  <ol></ol>
+</div>
+<div id='help'>
+  <p>
+    Quickly fuzzy find classes, mixins, methods, file:
+  </p>
+  <ul>
+    <li>
+      <span>T</span>
+      Open fuzzy finder dialog
+    </li>
+  </ul>
+  <p>
+    Control the navigation frame:
+  </p>
+  <ul>
+    <li>
+      <span>L</span>
+      Toggle list view
+    </li>
+    <li>
+      <span>C</span>
+      Show class list
+    </li>
+    <li>
+      <span>I</span>
+      Show mixin list
+    </li>
+    <li>
+      <span>F</span>
+      Show file list
+    </li>
+    <li>
+      <span>M</span>
+      Show method list
+    </li>
+    <li>
+      <span>E</span>
+      Show extras list
+    </li>
+  </ul>
+  <p>
+    You can focus and blur the search input:
+  </p>
+  <ul>
+    <li>
+      <span>S</span>
+      Focus search input
+    </li>
+    <li>
+      <span>Esc</span>
+      Blur search input
+    </li>
+  </ul>
+</div>
+  </body>
+</html>
