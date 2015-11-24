@@ -1,0 +1,8 @@
+--name "grits:grits-net-mapper"
+--title "grits-net-mapper Documentation"
+--readme ./README.md
+--private
+--quiet
+--extension coffee
+--output ./doc
+./src
