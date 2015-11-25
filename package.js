@@ -14,6 +14,7 @@ Package.onUse(function configureApi(api) {
     'bevanhunt:leaflet@0.3.18'
   ]);
   api.addFiles([
+    'src/grits_control.coffee',
     'src/grits_node.coffee',
     'src/grits_marker.coffee',
     'src/grits_path.coffee',
@@ -33,6 +34,7 @@ Package.onUse(function configureApi(api) {
     'images/marker-icon-B8B8B8.svg'
   ], 'client');
   api.export([
+    'GritsControl',
     'GritsNode',
     'GritsMarker',
     'GritsPath',
