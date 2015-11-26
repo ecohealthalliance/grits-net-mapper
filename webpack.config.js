@@ -3,7 +3,11 @@ var webpack = require('webpack');
 
 module.exports = {
   entry: [
-    './src/grits-net-mapper'
+    './src/grits_layer',
+    './src/grits_map',
+    './src/grits_marker',
+    './src/grits_node',
+    './src/grits_path'
   ],
   devtool: "eval",
   debug: true,
