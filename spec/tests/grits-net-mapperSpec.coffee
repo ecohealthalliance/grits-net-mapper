@@ -14,6 +14,8 @@ describe 'grits-net-mapper', ->
   global.L.Marker.extend = ->
   global.L.Path = {}
   global.L.Path.extend = ->
+  global.L.Map = {}
+  global.L.Map.extend = ->
   layer = require '../../src/grits_layer'
   marker = require '../../src/grits_marker'
   map = require '../../src/grits_map'
