@@ -19,75 +19,86 @@
       Index
     </a>
     &raquo;
-    <span class='title'>GritsLayer</span>
+    <span class='title'>GritsControl</span>
   </div>
 </div>
     <div id='content'>
       <h1>
         Class:
-        GritsLayer
+        GritsControl
       </h1>
       <table class='box'>
         <tr>
           <td>Defined in:</td>
-          <td>src&#47;grits_layer.coffee</td>
+          <td>src&#47;grits_control.coffee</td>
+        </tr>
+        <tr>
+          <td>Inherits:</td>
+          <td>
+            L.Control
+          </td>
         </tr>
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
-  <p>Creates an instance of a GritsLayer.  GritsLayer contains reference to a
-leaflet layer and leaflet group.</p>
+  <p>GritsControl represents a control on the map</p><p> or &#39;bottomright&#39;</p>
 </div>
 <div class='tags'>
+  <h3>Parameters:</h3>
+  <ul class='param'>
+    <li>
+      <span class='name'>htmlContent,</span>
+      <span class='type'>
+        (
+          <tt>String</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the content of the control </span>
+    </li>
+    <li>
+      <span class='name'>zindex,</span>
+      <span class='type'>
+        (
+          <tt>Integer</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the z-index to be applied to the container </span>
+    </li>
+    <li>
+      <span class='name'>position,</span>
+      <span class='type'>
+        (
+          <tt>String</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>one of &#39;topleft&#39;, &#39;topright&#39;, &#39;bottomleft&#39;, </span>
+    </li>
+    <li>
+      <span class='name'>css,</span>
+      <span class='type'>
+        (
+          <tt>String</tt>
+        )
+      </span>
+      &mdash;
+      <span class='desc'>the css class to be applied to the container </span>
+    </li>
+  </ul>
 </div>
       <h2>Instance Method Summary</h2>
       <ul class='summary'>
   <li>
     <span class='signature'>
-      <a href='#_removeLayerGroup-dynamic'>
+      <a href='#onAdd-dynamic'>
         #
 (void)
-<b>_removeLayerGroup</b><span>()</span>
+<b>onAdd</b><span>(map)</span>
       </a>
     </span>
     <span class='desc'>
-      removes the layerGroup from the map 
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#_addLayerGroup-dynamic'>
-        #
-(void)
-<b>_addLayerGroup</b><span>()</span>
-      </a>
-    </span>
-    <span class='desc'>
-      adds the layerGroup to the map 
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#draw-dynamic'>
-        #
-(void)
-<b>draw</b><span>()</span>
-      </a>
-    </span>
-    <span class='desc'>
-      draws the layer 
-    </span>
-  </li>
-  <li>
-    <span class='signature'>
-      <a href='#clear-dynamic'>
-        #
-(void)
-<b>clear</b><span>()</span>
-      </a>
-    </span>
-    <span class='desc'>
-      clears the data redraws the layer 
     </span>
   </li>
 </ul>
@@ -97,7 +108,7 @@ leaflet layer and leaflet group.</p>
     <p class='signature' id='constructor-dynamic'>
       #
 (void)
-<b>constructor</b><span>()</span>
+<b>constructor</b><span>(htmlContent, zIndex, position, css)</span>
       <br>
     </p>
     
@@ -106,56 +117,13 @@ leaflet layer and leaflet group.</p>
       <h2>Instance Method Details</h2>
       <div class='methods'>
   <div class='method_details'>
-    <p class='signature' id='_removeLayerGroup-dynamic'>
+    <p class='signature' id='onAdd-dynamic'>
       #
 (void)
-<b>_removeLayerGroup</b><span>()</span>
+<b>onAdd</b><span>(map)</span>
       <br>
     </p>
-    <div class='docstring'>
-  <p>removes the layerGroup from the map</p>
-</div>
-<div class='tags'>
-</div>
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='_addLayerGroup-dynamic'>
-      #
-(void)
-<b>_addLayerGroup</b><span>()</span>
-      <br>
-    </p>
-    <div class='docstring'>
-  <p>adds the layerGroup to the map</p>
-</div>
-<div class='tags'>
-</div>
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='draw-dynamic'>
-      #
-(void)
-<b>draw</b><span>()</span>
-      <br>
-    </p>
-    <div class='docstring'>
-  <p>draws the layer</p>
-</div>
-<div class='tags'>
-</div>
-  </div>
-  <div class='method_details'>
-    <p class='signature' id='clear-dynamic'>
-      #
-(void)
-<b>clear</b><span>()</span>
-      <br>
-    </p>
-    <div class='docstring'>
-  <p>clears the data redraws the layer</p>
-</div>
-<div class='tags'>
-</div>
+    
   </div>
 </div>
     </div>
