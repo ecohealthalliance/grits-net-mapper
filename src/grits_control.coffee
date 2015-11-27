@@ -7,20 +7,21 @@
 # @param [String] css, the css class to be applied to the container
 class GritsControl extends L.Control
   constructor: (htmlContent, zIndex, position, css) ->
-    L.Control.call(this)
     if typeof htmlContent == 'undefined'
       throw new Error('GritsConrol must have htmlContent defined')
-    @htmlContent = htmlContent
     @position = position or 'bottomleft'
     @options =
       position: position
-    @css = css or 'info'
-    @zIndex = zIndex or 7 # the leaflet default
+    @_htmlContent = htmlContent
+    @_css = css or 'info'
+    @_zIndex = zIndex or 7 # the leaflet default
+    super(this)
 
   onAdd: (map) ->
-    container = L.DomUtil.create('div', @css)
-    container.innerHTML = @htmlContent
-    container.style.zIndex = @zIndex
+    @_map = map
+    container = L.DomUtil.create('div', @_css)
+    container.innerHTML = @_htmlContent
+    container.style.zIndex = @_zIndex
     L.DomEvent.disableClickPropagation(container)
     L.DomEvent.disableScrollPropagation(container)
     return container
