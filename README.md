@@ -1,19 +1,19 @@
 # grits-net-mapper
 ![Build Status](https://circleci.com/gh/ecohealthalliance/grits-net-mapper.svg?style=shield&circle-token=c4714a094e9304774ad75278d18e534853fbbeed)
 
-A Meteor package for displaying transportation data on a Leaflet map.
+A Meteor package that provides an API for displaying GRITS transportation data on a Leaflet map.
 
 ## Features
 
-* Paths are drawn to resemble great circles using [Turfjs](https://github.com/turfjs/turf/)
+* [GritsControl](https://github.com/ecohealthalliance/grits-net-mapper/wiki/GritsControl) - Extends [L.Control](), a custom control class that allows for controls to have varying z-index.
 
-* Path directional chevrons are attached to the Paths using [Leaflet.PolylineDecorator](https://github.com/bbecquet/Leaflet.PolylineDecorator)
+* [GritsLayer](https://github.com/ecohealthalliance/grits-net-mapper/wiki/GritsLayer) - Interface for implementing a custom layer.
 
-* Paths are drawn with a normalized color ramp, meaning path color and weight is driven by its relation to all other paths within the current filter criteria.
+* [GritsMap](https://github.com/ecohealthalliance/grits-net-mapper/wiki/GritsMap) - Extends [L.Map](), a custom map class with with methods for adding/removing overlay controls.
 
-## [L.MapPath](https://github.com/ecohealthalliance/grits-net-meteor/wiki/API#user-content-lmappath)
-An object representing a set of flights with the same departure and arrival airports.
+* [GritsMarker](https://github.com/ecohealthalliance/grits-net-mapper/wiki/GritsMarker) - class that represents an SVG marker.
 
-## [L.MapNode](https://github.com/ecohealthalliance/grits-net-meteor/wiki/API#user-content-lmapnode)
-An objection representing an airport
+* [GritsNode](https://github.com/ecohealthalliance/grits-net-mapper/wiki/GritsNode) - class that represents a unique point on the map
+
+* [GritsPath](https://github.com/ecohealthalliance/grits-net-mapper/wiki/GritsPath) - class that represents a connection between two nodes
 
