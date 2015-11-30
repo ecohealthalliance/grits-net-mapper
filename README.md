@@ -5,7 +5,7 @@ A Meteor package that provides an API for displaying GRITS transportation data o
 
 ## Features
 
-* [GritsControl](https://github.com/ecohealthalliance/grits-net-mapper/wiki/GritsControl) - Extends [L.Control](http://leafletjs.com/reference.html#icontrol), a custom control class that allows for controls to have varying z-index.
+* [GritsControl](https://github.com/ecohealthalliance/grits-net-mapper/wiki/GritsControl) - Extends [L.Control](http://leafletjs.com/reference.html#control), a custom control class that allows for controls to have varying z-index.
 
 * [GritsLayer](https://github.com/ecohealthalliance/grits-net-mapper/wiki/GritsLayer) - Interface for implementing a custom layer.
 
