@@ -14,7 +14,7 @@ class GritsLayer
   # removes the layerGroup from the map
   _removeLayerGroup: () ->
     if !(typeof @_layerGroup == 'undefined' or @_layerGroup == null)
-      @_map.getMap().removeLayer(@_layerGroup)  
+      @_map.removeLayer(@_layerGroup)  
     @_layerGroup = null
     return
   
@@ -22,7 +22,7 @@ class GritsLayer
   _addLayerGroup: () ->  
     @_layerGroup = L.layerGroup([@_layer])
     @_map.addOverlayControl(@_name, @_layerGroup)
-    @_map.getMap().addLayer(@_layerGroup)
+    @_map.addLayer(@_layerGroup)
     return
   
   # draws the layer
